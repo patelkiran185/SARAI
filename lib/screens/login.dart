@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'github_screen.dart';
-import 'google_screen.dart';
-import 'kaggle_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -18,7 +16,6 @@ class _LoginScreenState extends State<LoginScreen>
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   bool _isGooglePressed = false;
-  bool _isKagglePressed = false;
   bool _isGithubPressed = false;
 
   @override
@@ -181,35 +178,24 @@ class _LoginScreenState extends State<LoginScreen>
                       _buildAnimatedIcon(
                         'assets/images/google_icon.png',
                         () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => GoogleScreen()),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //       builder: (context) => GoogleScreen()),
+                          // );
                         },
                         _isGooglePressed,
                       ),
-                      const SizedBox(width: 20),
-                      _buildAnimatedIcon(
-                        'assets/images/kaggle_icon.png',
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => KaggleScreen()),
-                          );
-                        },
-                        _isKagglePressed,
-                      ),
+                  
                       const SizedBox(width: 20),
                       _buildAnimatedIcon(
                         'assets/images/github_icon.png',
                         () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => GithubScreen()),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //       builder: (context) => GithubScreen()),
+                          // );
                         },
                         _isGithubPressed,
                       ),

@@ -6,6 +6,10 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   String? _selectedUserType;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -23,7 +27,52 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   @override
   void dispose() {
     _animationController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
     super.dispose();
+  }
+
+  Widget _buildAnimatedTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon,
+  ) {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: Duration(milliseconds: 500),
+      builder: (context, double value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, (1 - value) * 20),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              height: 45,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white),
+              ),
+              child: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: label,
+                  labelStyle: TextStyle(color: Colors.white54),
+                  prefixIcon: Icon(icon, color: Colors.white, size: 18),
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                ),
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -39,113 +88,57 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  
                   const SizedBox(height: 20),
 
                   // Name Input Field
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Name',
-                      prefixIcon: Icon(Icons.person, color: Colors.white, size: 20),
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      labelStyle: TextStyle(color: Colors.white),
-                      hintText: 'Enter your name',
-                      hintStyle: TextStyle(color: Colors.white54),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  _buildAnimatedTextField(_nameController, 'Name', Icons.person),
                   const SizedBox(height: 15),
 
                   // Email Input Field
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email, color: Colors.white, size: 20),
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      labelStyle: TextStyle(color: Colors.white),
-                      hintText: 'Enter your email',
-                      hintStyle: TextStyle(color: Colors.white54),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  _buildAnimatedTextField(_emailController, 'Email', Icons.email),
                   const SizedBox(height: 15),
 
                   // Password Input Field
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock, color: Colors.white, size: 20),
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      labelStyle: TextStyle(color: Colors.white),
-                      hintText: 'Enter your password',
-                      hintStyle: TextStyle(color: Colors.white54),
-                    ),
-                    obscureText: true,
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  _buildAnimatedTextField(_passwordController, 'Password', Icons.lock),
                   const SizedBox(height: 15),
 
                   // User Type Dropdown
-                  DropdownButtonFormField<String>(
-                    value: _selectedUserType,
-                    hint: Text('Select User Type', style: TextStyle(color: Colors.white54)),
-                    items: [
-                      DropdownMenuItem(value: 'Researcher', child: Text('Researcher')),
-                      DropdownMenuItem(value: 'Government', child: Text('Government')),
-                      DropdownMenuItem(value: 'Farmer', child: Text('Farmer')),
-                      DropdownMenuItem(value: 'Analyst', child: Text('Analyst')),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedUserType = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      labelStyle: TextStyle(color: Colors.white),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    dropdownColor: Color(0xFFA49E9E),
-                    style: TextStyle(color: Colors.white),
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedUserType,
+                      hint: Text('Select User Type', style: TextStyle(color: Colors.white54)),
+                      items: [
+                        DropdownMenuItem(value: 'Researcher', child: Text('Researcher')),
+                        DropdownMenuItem(value: 'Government', child: Text('Government')),
+                        DropdownMenuItem(value: 'Farmer', child: Text('Farmer')),
+                        DropdownMenuItem(value: 'Analyst', child: Text('Analyst')),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedUserType = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.transparent,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        labelStyle: TextStyle(color: Colors.white),
+                      ),
+                      dropdownColor: Color(0xFFA49E9E),
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                   const SizedBox(height: 15),
 
                   // Phone Number Input Field (Optional)
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Phone Number (Optional)',
-                      prefixIcon: Icon(Icons.phone, color: Colors.white, size: 20),
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      labelStyle: TextStyle(color: Colors.white),
-                      hintText: 'Enter your phone number',
-                      hintStyle: TextStyle(color: Colors.white54),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  _buildAnimatedTextField(_phoneController, 'Phone Number (Optional)', Icons.phone),
                   const SizedBox(height: 20),
 
                   // Register Button
@@ -157,7 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       scale: _scaleAnimation,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/login');
+                          // Registration logic here
                         },
                         child: const Text('Register', style: TextStyle(color: Colors.grey)),
                         style: ElevatedButton.styleFrom(
@@ -184,14 +177,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           // Google sign-up logic
                         },
                         icon: Image.asset('assets/images/google_icon.png'),
-                        iconSize: 20, // Decreased icon size
-                      ),
-                      const SizedBox(width: 10),
-                      IconButton(
-                        onPressed: () {
-                          // Kaggle sign-up logic
-                        },
-                        icon: Image.asset('assets/images/kaggle_icon.png'),
                         iconSize: 20, // Decreased icon size
                       ),
                       const SizedBox(width: 10),
