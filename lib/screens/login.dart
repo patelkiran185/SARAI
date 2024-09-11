@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -13,17 +13,19 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   bool _isGooglePressed = false;
   bool _isGithubPressed = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
     );
     _scaleAnimation =
         Tween<double>(begin: 1.0, end: 0.95).animate(_animationController);
@@ -37,31 +39,72 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
+  void _showDialog(BuildContext context, String title, String message, bool isSuccess) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFA49E9E), // Set background color
+          title: Text(title, style: const TextStyle(color: Colors.white)), // Set title text color
+          content: Text(message, style: const TextStyle(color: Colors.white)), // Set content text color
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                if (isSuccess) {
+                  Navigator.pushReplacementNamed(context, '/home'); // Redirect on success
+                }
+              },
+              child: const Text("OK", style: TextStyle(color: Colors.white)), // Set button text color
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _signIn() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      // ignore: unused_local_variable
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
-              email: _emailController.text, password: _passwordController.text);
-      // Handle successful sign in
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      if (userCredential.user != null) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true); // Save login state
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } on FirebaseAuthException catch (e) {
-      // Handle Firebase sign-in error
-      print("Error: ${e.message}");
+      String errorMessage = 'An error occurred. Please try again.';
+      if (e.code == 'user-not-found') {
+        errorMessage = 'No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Wrong password provided.';
+      }
+
+      _showDialog(context, 'Error', errorMessage, false);
+    } catch (e) {
+      _showDialog(context, 'Error', 'An unexpected error occurred.', false);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   Widget _buildAnimatedIcon(
-    String assetPath,
-    VoidCallback onPressed,
-    bool isPressed, {
-    double iconSize = 20,
-  }) {
+      String assetPath, VoidCallback onPressed, bool isPressed,
+      {double iconSize = 20}) {
     return GestureDetector(
       onTapDown: (_) => setState(() => isPressed = true),
       onTapUp: (_) => setState(() => isPressed = false),
       onTapCancel: () => setState(() => isPressed = false),
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 200),
         child: IconButton(
           icon: Image.asset(
             assetPath,
@@ -69,20 +112,17 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           iconSize: iconSize,
           onPressed: onPressed,
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
         ),
       ),
     );
   }
 
   Widget _buildAnimatedTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon,
-  ) {
+      TextEditingController controller, String label, IconData icon) {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 500),
       builder: (context, double value, child) {
         return Opacity(
           opacity: value,
@@ -98,16 +138,19 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               child: TextField(
                 controller: controller,
+                cursorColor: Colors.purple,
+                cursorHeight: 25,
+                textAlignVertical: TextAlignVertical.center,
                 decoration: InputDecoration(
                   labelText: label,
-                  labelStyle: TextStyle(color: Colors.white54),
+                  labelStyle: const TextStyle(color: Colors.white54),
                   prefixIcon: Icon(icon, color: Colors.white, size: 18),
                   border: InputBorder.none,
                   contentPadding:
-                      EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                   floatingLabelBehavior: FloatingLabelBehavior.never,
                 ),
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ),
@@ -119,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFA49E9E),
+      backgroundColor: const Color(0xFFA49E9E),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -133,7 +176,8 @@ class _LoginScreenState extends State<LoginScreen>
                     height: 150,
                   ),
                   const SizedBox(height: 20),
-                  _buildAnimatedTextField(_emailController, 'Email', Icons.email),
+                  _buildAnimatedTextField(
+                      _emailController, 'Email', Icons.email),
                   const SizedBox(height: 15),
                   _buildAnimatedTextField(
                       _passwordController, 'Password', Icons.lock),
@@ -146,12 +190,14 @@ class _LoginScreenState extends State<LoginScreen>
                       scale: _scaleAnimation,
                       child: ElevatedButton(
                         onPressed: _signIn,
-                        child: const Text('Login',
-                            style: TextStyle(color: Colors.grey)),
+                        child: _isLoading
+                            ? const CircularProgressIndicator()
+                            : const Text('Login',
+                                style: TextStyle(color: Colors.grey)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 247, 244, 248),
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                               horizontal: 35, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
@@ -163,42 +209,28 @@ class _LoginScreenState extends State<LoginScreen>
                   const SizedBox(height: 20),
                   Row(
                     children: const [
-                      Expanded(child: Divider(color: Colors.white, thickness: 1)),
+                      Expanded(
+                          child: Divider(color: Colors.white, thickness: 1)),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Text("OR", style: TextStyle(color: Colors.white)),
+                        child: Text("OR",
+                            style: TextStyle(color: Colors.white)),
                       ),
-                      Expanded(child: Divider(color: Colors.white, thickness: 1)),
+                      Expanded(
+                          child: Divider(color: Colors.white, thickness: 1)),
                     ],
                   ),
                   const SizedBox(height: 15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildAnimatedIcon(
-                        'assets/images/google_icon.png',
-                        () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //       builder: (context) => GoogleScreen()),
-                          // );
-                        },
-                        _isGooglePressed,
-                      ),
-                  
+                      _buildAnimatedIcon('assets/images/google_icon.png', () {
+                        // Google login implementation here
+                      }, _isGooglePressed),
                       const SizedBox(width: 20),
-                      _buildAnimatedIcon(
-                        'assets/images/github_icon.png',
-                        () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //       builder: (context) => GithubScreen()),
-                          // );
-                        },
-                        _isGithubPressed,
-                      ),
+                      _buildAnimatedIcon('assets/images/github_icon.png', () {
+                        // GitHub login implementation here
+                      }, _isGithubPressed),
                     ],
                   ),
                   const SizedBox(height: 20),

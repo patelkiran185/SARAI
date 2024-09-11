@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -11,6 +13,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   String? _selectedUserType;
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
@@ -32,6 +38,82 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     _nameController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _register() async {
+    try {
+      // Try to create a new user
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      User? user = userCredential.user;
+
+      // Store user data in Firestore if registration is successful
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'userType': _selectedUserType,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        // Show success dialog
+        _showDialog(context, "Success", "You have successfully registered!", true);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        // If the email is already registered, log in the user instead
+        print('The email address is already in use. Logging in...');
+        try {
+          UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+          print('Successfully logged in');
+          // Navigate to a different screen or show a success message
+          Navigator.pushReplacementNamed(context, '/login'); // Redirect to home after login
+        } catch (signInError) {
+          print('Error during login: $signInError');
+          _showDialog(context, "Error", "Error during login: $signInError", false);
+        }
+      } else if (e.code == 'weak-password') {
+        print('The password provided is too weak.');
+        _showDialog(context, "Error", "The password provided is too weak.", false);
+      } else {
+        print('Error: ${e.message}');
+        _showDialog(context, "Error", e.message ?? "An error occurred.", false);
+      }
+    } catch (e) {
+      print('Error: $e');
+      _showDialog(context, "Error", "An unexpected error occurred.", false);
+    }
+  }
+
+  void _showDialog(BuildContext context, String title, String message, bool isSuccess) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                if (isSuccess) {
+                  Navigator.pushReplacementNamed(context, '/login'); // Redirect to login page if success
+                }
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildAnimatedTextField(
@@ -149,9 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     child: ScaleTransition(
                       scale: _scaleAnimation,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Registration logic here
-                        },
+                        onPressed: _register, // Call the _register function here
                         child: const Text('Register', style: TextStyle(color: Colors.grey)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color.fromARGB(255, 247, 245, 245),
