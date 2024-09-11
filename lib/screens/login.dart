@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isGooglePressed = false;
   bool _isGithubPressed = false;
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
 
   @override
   void initState() {
@@ -39,23 +40,24 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  void _showDialog(BuildContext context, String title, String message, bool isSuccess) {
+  void _showDialog(
+      BuildContext context, String title, String message, bool isSuccess) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFFA49E9E), // Set background color
-          title: Text(title, style: const TextStyle(color: Colors.white)), // Set title text color
-          content: Text(message, style: const TextStyle(color: Colors.white)), // Set content text color
+          backgroundColor: const Color(0xFFA49E9E),
+          title: Text(title, style: const TextStyle(color: Colors.black)),
+          content: Text(message, style: const TextStyle(color: Colors.black)),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
                 if (isSuccess) {
-                  Navigator.pushReplacementNamed(context, '/home'); // Redirect on success
+                  Navigator.pushReplacementNamed(context, '/home');
                 }
               },
-              child: const Text("OK", style: TextStyle(color: Colors.white)), // Set button text color
+              child: const Text("OK", style: TextStyle(color: Colors.black)),
             ),
           ],
         );
@@ -64,37 +66,78 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _signIn() async {
+  setState(() {
+    _isLoading = true;
+  });
+
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
+
+  // Basic validation
+  if (email.isEmpty || password.isEmpty) {
+    _showDialog(context, 'Login Error', 'Please enter both email and password.', false);
     setState(() {
-      _isLoading = true;
+      _isLoading = false;
     });
-    try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-
-      if (userCredential.user != null) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true); // Save login state
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    } on FirebaseAuthException catch (e) {
-      String errorMessage = 'An error occurred. Please try again.';
-      if (e.code == 'user-not-found') {
-        errorMessage = 'No user found for that email.';
-      } else if (e.code == 'wrong-password') {
-        errorMessage = 'Wrong password provided.';
-      }
-
-      _showDialog(context, 'Error', errorMessage, false);
-    } catch (e) {
-      _showDialog(context, 'Error', 'An unexpected error occurred.', false);
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    return;
   }
+
+  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+    _showDialog(context, 'Login Error', 'Please enter a valid email address.', false);
+    setState(() {
+      _isLoading = false;
+    });
+    return;
+  }
+
+  try {
+    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    if (userCredential.user != null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  } on FirebaseAuthException catch (e) {
+    String errorMessage;
+
+    
+    print('Error code: ${e.code}'); 
+
+    switch (e.code) {
+      case 'user-not-found':
+        errorMessage = 'No user found for that email.';
+        break;
+      case 'wrong-password':
+        errorMessage = 'Wrong password provided.';
+        break;
+      case 'invalid-email':
+        errorMessage = 'The email address is not valid.';
+        break;
+      case 'network-request-failed':
+        errorMessage = 'Network error. Please check your internet connection.';
+        break;
+      case 'too-many-requests':
+        errorMessage = 'Too many requests. Please try again later.';
+        break;
+      default:
+        errorMessage = 'An unexpected error occurred. Code: ${e.code}';
+        break;
+    }
+
+    _showDialog(context, 'Login Error', errorMessage, false);
+  } catch (e) {
+    _showDialog(context, 'Error', 'An error occurred. Please try again.', false);
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
+
 
   Widget _buildAnimatedIcon(
       String assetPath, VoidCallback onPressed, bool isPressed,
@@ -119,7 +162,11 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildAnimatedTextField(
-      TextEditingController controller, String label, IconData icon) {
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    bool isPassword = false,
+  }) {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
       duration: const Duration(milliseconds: 500),
@@ -138,16 +185,26 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               child: TextField(
                 controller: controller,
-                cursorColor: Colors.purple,
-                cursorHeight: 25,
-                textAlignVertical: TextAlignVertical.center,
+                obscureText: isPassword ? !_isPasswordVisible : false, 
                 decoration: InputDecoration(
                   labelText: label,
                   labelStyle: const TextStyle(color: Colors.white54),
                   prefixIcon: Icon(icon, color: Colors.white, size: 18),
+                  suffixIcon: isPassword
+                      ? IconButton(
+                          icon: Icon(
+                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                        )
+                      : null,
                   border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                   floatingLabelBehavior: FloatingLabelBehavior.never,
                 ),
                 style: const TextStyle(color: Colors.white),
@@ -158,6 +215,7 @@ class _LoginScreenState extends State<LoginScreen>
       },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen>
                       _emailController, 'Email', Icons.email),
                   const SizedBox(height: 15),
                   _buildAnimatedTextField(
-                      _passwordController, 'Password', Icons.lock),
+                      _passwordController, 'Password', Icons.lock,isPassword: true),
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTapDown: (_) => _animationController.forward(),
@@ -213,8 +271,8 @@ class _LoginScreenState extends State<LoginScreen>
                           child: Divider(color: Colors.white, thickness: 1)),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Text("OR",
-                            style: TextStyle(color: Colors.white)),
+                        child:
+                            Text("OR", style: TextStyle(color: Colors.white)),
                       ),
                       Expanded(
                           child: Divider(color: Colors.white, thickness: 1)),
