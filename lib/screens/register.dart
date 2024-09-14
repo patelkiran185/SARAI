@@ -429,7 +429,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFA49E9E),
+      backgroundColor: Color(0xFF4A90E2),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
