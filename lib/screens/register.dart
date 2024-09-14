@@ -474,7 +474,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                         ),
                         labelStyle: TextStyle(color: Colors.white),
                       ),
-                      dropdownColor: Color(0xFFA49E9E),
+                      dropdownColor: Color.fromARGB(255, 53, 132, 197),
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
