@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +15,12 @@ void main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+  User? currentUser = FirebaseAuth.instance.currentUser;
+  if (currentUser != null) {
+    isLoggedIn = true;
+    await prefs.setBool('isLoggedIn', true);
+  }
 
   runApp(MyApp(hasSeenOnboarding: hasSeenOnboarding, isLoggedIn: isLoggedIn));
 }
@@ -36,7 +43,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => SplashScreen(
             hasSeenOnboarding: hasSeenOnboarding, isLoggedIn: isLoggedIn),
         '/onboarding': (context) => OnboardingScreen(),
-        '/login': (context) => const LoginScreen(),
+        '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
         '/home': (context) => const HomeScreen(),
         // Remove the placeholder route for OTP screen
@@ -49,16 +56,13 @@ class SplashScreen extends StatefulWidget {
   final bool hasSeenOnboarding;
   final bool isLoggedIn;
 
-  const SplashScreen(
-      {Key? key, required this.hasSeenOnboarding, required this.isLoggedIn})
-      : super(key: key);
+  const SplashScreen({Key? key, required this.hasSeenOnboarding, required this.isLoggedIn}) : super(key: key);
 
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
 
   @override
@@ -84,14 +88,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     }
   }
 
- 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-  body:Container(
+    return Scaffold(
+      body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors:  [Color(0xFF4A90E2), Color(0xFF357ABD)],
+            colors: [Color(0xFF4A90E2), Color(0xFF357ABD)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -132,4 +135,4 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _controller.dispose();
     super.dispose();
   }
-  }
+}
