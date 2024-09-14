@@ -91,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   body:Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFA49E9E), Color(0xFFD8B2B2)],
+            colors:  [Color(0xFF4A90E2), Color(0xFF357ABD)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -103,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
-                colors: [Color(0xFFFFFFFF), Color(0xFFC6A8A8)],
+                colors: [Color(0xFFFFFFFF), Color(0xFFB3D1F3)],
                 stops: [0.3, 1.0],
               ),
               boxShadow: [
@@ -117,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             ),
             child: Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFA49E9E)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4A90E2)),
                 strokeWidth: 6,
               ),
             ),

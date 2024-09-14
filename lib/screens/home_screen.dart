@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        backgroundColor: Color(0xFFA49E9E),
+        backgroundColor: Color(0xFF4A90E2),
         body: SafeArea(
           child: Column(
             children: [
