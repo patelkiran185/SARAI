@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sarai/services/auth_service.dart';
@@ -13,7 +13,6 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -40,10 +39,8 @@ class _LoginScreenState extends State<LoginScreen>
     _passwordController.dispose();
     super.dispose();
   }
- 
 
-
-  // normal email/ password 
+  // normal email/ password
 
   Future<void> _signIn() async {
     setState(() {
@@ -63,16 +60,17 @@ class _LoginScreenState extends State<LoginScreen>
         email: email,
         password: password,
       );
-      
-    // Check if the user exists in Firebase Authentication
-    User? user = userCredential.user;
 
-    if (user != null) {
-      // User exists, navigate to home screen
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      _showDialog(context, 'Login Error', 'User not found in Firebase.', false);
-    }
+      // Check if the user exists in Firebase Authentication
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // User exists, navigate to home screen
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        _showDialog(
+            context, 'Login Error', 'User not found in Firebase.', false);
+      }
     } catch (e) {
       _showDialog(context, 'Login Error', e.toString(), false);
     } finally {
@@ -82,7 +80,8 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-  void _showDialog(BuildContext context, String title, String message, bool isSuccess) {
+  void _showDialog(
+      BuildContext context, String title, String message, bool isSuccess) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -160,7 +159,8 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildAnimatedIcon(String assetPath, VoidCallback onPressed, bool isPressed) {
+  Widget _buildAnimatedIcon(
+      String assetPath, VoidCallback onPressed, bool isPressed) {
     return GestureDetector(
       onTapDown: (_) => setState(() => isPressed = true),
       onTapUp: (_) => setState(() => isPressed = false),
@@ -181,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        SystemNavigator.pop(); 
+        SystemNavigator.pop();
         return false;
       },
       child: Scaffold(
@@ -248,16 +248,11 @@ class _LoginScreenState extends State<LoginScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildAnimatedIcon('assets/images/google_icon.png', () {
-                          // Google login implementation here
-
-
-                          // from auth service
-
-
+                        _buildAnimatedIcon('assets/images/google_icon.png',
+                            () async {
+                          final authService = AuthService();
+                          await authService.loginWithGoogle(context);
                         }, _isGooglePressed),
-
-
                         const SizedBox(width: 20),
                         _buildAnimatedIcon('assets/images/github_icon.png',
                             () async {

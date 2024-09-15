@@ -1,109 +1,193 @@
-
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'home_screen.dart';
 
 class OtpScreen extends StatefulWidget {
-  final String email;
-  final String phoneNumber;
-  final String userId;
+  final User user;
 
-  OtpScreen({required this.email, required this.phoneNumber, required this.userId});
+  OtpScreen({required this.user});
 
   @override
   _OtpScreenState createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  bool _isLoading = false;
+  final _otpController = TextEditingController();
+  final _emailOtp = EmailOTP();
+  int _resendTimer = 60;
+  late Timer _timer;
+  String _errorMessage = '';
 
-  Future<void> _verifyEmail() async {
-    setState(() {
-      _isLoading = true;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _setUpEmailOtp();
+    _startResendTimer();
+  }
 
-    try {
-      // Check if the user has verified their email
-      User? user = _auth.currentUser;
-      await user?.reload();
-      user = _auth.currentUser;
+  void _setUpEmailOtp() {
+    _emailOtp.setConfig(
+      appEmail: 'makethon0@gmail.com',
+      appName: 'sarai',
+      userEmail: widget.user.email!,
+    );
+  }
 
-      if (user != null && user.emailVerified) {
-        // Update user verification status in Firestore
-        await _firestore.collection('users').doc(widget.userId).update({
-          'isVerified': true,
+  void _startResendTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_resendTimer > 0) {
+        setState(() {
+          _resendTimer--;
         });
-
-        _showDialog('Verification Successful', 'Your email has been verified. You can now use the app.', true);
       } else {
-        _showDialog('Verification Error', 'Please verify your email before proceeding.', false);
+        _timer.cancel();
       }
-    } catch (e) {
-      _showDialog('Verification Error', 'An error occurred during verification: ${e.toString()}', false);
-    } finally {
+    });
+  }
+
+  Future<void> _sendOtp() async {
+    setState(() {
+      _errorMessage = '';
+    });
+    bool otpSent = await _emailOtp.sendOTP();
+    if (otpSent) {
+      print("OTP sent successfully");
       setState(() {
-        _isLoading = false;
+        _resendTimer = 60;
+      });
+      _startResendTimer();
+    } else {
+      setState(() {
+        _errorMessage = 'Failed to send OTP. Please try again.';
       });
     }
   }
 
-  Future<void> _resendVerificationEmail() async {
-    try {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        await user.sendEmailVerification();
-        _showDialog('Email Sent', 'A new verification email has been sent to your email address.', true);
-      }
-    } catch (e) {
-      _showDialog('Error', 'Failed to resend verification email: ${e.toString()}', false);
+  Future<void> _verifyOtp() async {
+    final otp = _otpController.text;
+    print("Verifying OTP: $otp");
+
+    bool isOtpValid = await _emailOtp.verifyOTP(otp: otp);
+
+    if (isOtpValid) {
+      print("OTP is valid ✅");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(),
+        ),
+      );
+    } else {
+      print("OTP is invalid ❌");
+      setState(() {
+        _errorMessage = 'Invalid OTP. Please try again.';
+      });
     }
   }
 
-  void _showDialog(String title, String message, bool isSuccess) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Verify Email')),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Please check your email and verify your account.'),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _verifyEmail,
-              child: _isLoading
-                  ? CircularProgressIndicator()
-                  : Text('I have verified my email'),
-            ),
-            SizedBox(height: 20),
-            TextButton(
-              onPressed: _resendVerificationEmail,
-              child: Text('Resend verification email'),
-            ),
-          ],
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text('Verify OTP', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.blue,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(height: 40),
+              Icon(Icons.email, size: 80, color: Colors.blue),
+              SizedBox(height: 40),
+              Text(
+                'Verify Your Email',
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              Text(
+                'A verification code has been sent to ${widget.user.email}. Please enter the OTP below to verify your account.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
+              SizedBox(height: 40),
+              TextField(
+                controller: _otpController,
+                decoration: InputDecoration(
+                  labelText: 'Enter OTP',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.lock, color: Colors.blue),
+                ),
+                keyboardType: TextInputType.number,
+                style: TextStyle(fontSize: 18),
+              ),
+              SizedBox(height: 20),
+              Center(
+                child: Container(
+                  width: 150, // Set the width to 100
+                  child: ElevatedButton(
+                    onPressed: _verifyOtp,
+                    child: Text(
+                      'Verify OTP',
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white), // Set text color to white
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(50), // Make the button round
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                _errorMessage,
+                style: TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              TextButton(
+                onPressed: _resendTimer == 0 ? _sendOtp : null,
+                child: Text(
+                  _resendTimer > 0
+                      ? 'Resend OTP in $_resendTimer seconds'
+                      : 'Resend OTP',
+                  style: TextStyle(color: Colors.blue),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

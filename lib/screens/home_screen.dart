@@ -11,6 +11,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime? lastPressed;
+ // ignore: unused_field
  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   void initState() {

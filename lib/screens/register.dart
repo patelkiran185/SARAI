@@ -47,94 +47,99 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Future<void> _register() async {
-  setState(() {
-    _isLoading = true;
-  });
-  final name = _nameController.text.trim();
-  final email = _emailController.text.trim();
-  final password = _passwordController.text.trim();
-  final phoneNumber = _phoneController.text.trim();
-  if (name.isEmpty ||
-      email.isEmpty ||
-      password.isEmpty ||
-      phoneNumber.isEmpty ||
-      _selectedUserType == null) {
-    _showDialog('Registration Error',
-        'Please fill all fields and select a user type.', false);
     setState(() {
-      _isLoading = false;
+      _isLoading = true;
     });
-    return;
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final phoneNumber = _phoneController.text.trim();
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        phoneNumber.isEmpty ||
+        _selectedUserType == null) {
+      _showDialog('Registration Error',
+          'Please fill all fields and select a user type.', false);
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    // Validate phone number
+    if (phoneNumber.length != 10 ||
+        !RegExp(r'^[0-9]{10}$').hasMatch(phoneNumber)) {
+      _showDialog('Registration Error',
+          'Invalid phone number. It should be exactly 10 digits.', false);
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    // Validate email
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      _showDialog('Registration Error', 'Invalid email format.', false);
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    // Validate password
+    if (password.length < 6 ||
+        !RegExp(r'^(?=.*[A-Z])(?=.*[!@#$&*]).{6,}$').hasMatch(password)) {
+      _showDialog(
+          'Registration Error',
+          'Password must be at least 6 characters long, contain at least one capital letter, and one special character.',
+          false);
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      // Create user with email and password
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      User? user = userCredential.user;
+
+      // Store user data in Firestore
+      await _firestore.collection('users').doc(user!.uid).set({
+        'name': name,
+        'email': email,
+        'phoneNumber': phoneNumber,
+        'userType': _selectedUserType,
+        'isVerified': false,
+      }).then((_) {
+        print("User data added to Firestore successfully.");
+      }).catchError((error) {
+        print("Failed to add user data to Firestore: $error");
+      });
+
+      // Navigate to Home screen
+      final authService = AuthService();
+      await authService.setLoggedIn(true);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(),
+        ),
+      );
+    } catch (e) {
+      _showDialog('Registration Error',
+          'An error occurred during registration: ${e.toString()}', false);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
-
-  // Validate phone number
-  if (phoneNumber.length != 10 || !RegExp(r'^[0-9]{10}$').hasMatch(phoneNumber)) {
-    _showDialog('Registration Error', 'Invalid phone number. It should be exactly 10 digits.', false);
-    setState(() {
-      _isLoading = false;
-    });
-    return;
-  }
-
-  // Validate email
-  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-    _showDialog('Registration Error', 'Invalid email format.', false);
-    setState(() {
-      _isLoading = false;
-    });
-    return;
-  }
-
-  // Validate password
-  if (password.length < 6 || 
-      !RegExp(r'^(?=.*[A-Z])(?=.*[!@#$&*]).{6,}$').hasMatch(password)) {
-    _showDialog('Registration Error', 'Password must be at least 6 characters long, contain at least one capital letter, and one special character.', false);
-    setState(() {
-      _isLoading = false;
-    });
-    return;
-  }
-
-  try {
-    // Create user with email and password
-    UserCredential userCredential =
-        await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-    User? user = userCredential.user;
-
-    // Store user data in Firestore
-    await _firestore.collection('users').doc(user!.uid).set({
-      'name': name,
-      'email': email,
-      'phoneNumber': phoneNumber,
-      'userType': _selectedUserType,
-      'isVerified': false,
-    }).then((_) {
-      print("User data added to Firestore successfully.");
-    }).catchError((error) {
-      print("Failed to add user data to Firestore: $error");
-    });
-
-    // Navigate to Home screen
-    final authService = AuthService();
-    await authService.setLoggedIn(true);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HomeScreen(),
-      ),
-    );
-  } catch (e) {
-    _showDialog('Registration Error',
-        'An error occurred during registration: ${e.toString()}', false);
-  } finally {
-    setState(() {
-      _isLoading = false;
-    });
-  }
-}
 
   void _showDialog(String title, String message, bool isSuccess) {
     showDialog(
@@ -218,7 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        SystemNavigator.pop(); 
+        SystemNavigator.pop();
         return false;
       },
       child: Scaffold(
@@ -327,11 +332,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         IconButton(
-                          onPressed: () {
-                            // Google sign-up logic
-
-                            // from auth service
-
+                          onPressed: () async {
+                            final authService = AuthService();
+                            await authService.registerWithGoogle(context);
+                            // No need to handle navigation here; AuthService will handle it
                           },
                           icon: Image.asset('assets/images/google_icon.png'),
                           iconSize: 20,

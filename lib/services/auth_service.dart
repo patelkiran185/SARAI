@@ -1,26 +1,24 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:github_signin_promax/github_signin_promax.dart';
+import 'package:sarai/screens/otp_screen.dart';
+import 'package:sarai/screens/phone_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Email/Password register
-  Future<UserCredential?> registerWithEmailAndPassword(
-    String email,
-    String password,
-    String name,
-    String phone,
-    String? userType
-  ) async {
+  Future<UserCredential?> registerWithEmailAndPassword(String email,
+      String password, String name, String phone, String? userType) async {
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password
-      );
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
       User? user = userCredential.user;
 
       await user?.updateProfile(displayName: name);
@@ -38,7 +36,7 @@ class AuthService {
       return null;
     }
   }
-  
+
   Future<void> setLoggedIn(bool value) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', value);
@@ -48,15 +46,13 @@ class AuthService {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool('isLoggedIn') ?? false;
   }
-  
 
- // Email/pasword Login
-  Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {
+  // Email/pasword Login
+  Future<UserCredential?> signInWithEmailAndPassword(
+      String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password
-      );
+          email: email, password: password);
       return userCredential;
     } on FirebaseAuthException catch (e) {
       print("FirebaseAuthException: ${e.message}");
@@ -66,11 +62,10 @@ class AuthService {
       return null;
     }
   }
-  
 
-  //  Github register 
- 
- Future<UserCredential?> registerWithGitHub(BuildContext context) async {
+  //  Github register
+
+  Future<UserCredential?> registerWithGitHub(BuildContext context) async {
     try {
       // GitHub sign-in parameters
       var params = GithubSignInParams(
@@ -95,11 +90,13 @@ class AuthService {
 
       if (response.accessToken != null) {
         // GitHub credentials
-        final AuthCredential githubCredential = GithubAuthProvider.credential(response.accessToken!);
-        
+        final AuthCredential githubCredential =
+            GithubAuthProvider.credential(response.accessToken!);
+
         // Check if user is already registered
-        final UserCredential userCredential = await _auth.signInWithCredential(githubCredential);
-        
+        final UserCredential userCredential =
+            await _auth.signInWithCredential(githubCredential);
+
         return userCredential;
       } else {
         print("GitHub registration failed or was canceled");
@@ -112,11 +109,11 @@ class AuthService {
   }
 
   // Github Login
-  
+
   // ignore: body_might_complete_normally_nullable
   Future<UserCredential?> loginWithGitHub(BuildContext context) async {
     try {
-        var params = GithubSignInParams(
+      var params = GithubSignInParams(
         clientId: 'Ov23lidczkXUiqnUJChA',
         clientSecret: 'dd1e0be5b4383720053fa4e0fbfac30e02206636',
         redirectUrl: 'https://sarai-4f66a.firebaseapp.com/__/auth/handler',
@@ -136,10 +133,12 @@ class AuthService {
       ) as GithubSignInResponse;
 
       if (response.accessToken != null) {
-        final AuthCredential githubCredential = GithubAuthProvider.credential(response.accessToken!);
+        final AuthCredential githubCredential =
+            GithubAuthProvider.credential(response.accessToken!);
 
         try {
-          UserCredential userCredential = await _auth.signInWithCredential(githubCredential);
+          UserCredential userCredential =
+              await _auth.signInWithCredential(githubCredential);
           return userCredential;
         } on FirebaseAuthException catch (e) {
           if (e.code == 'account-exists-with-different-credential') {
@@ -158,46 +157,175 @@ class AuthService {
     }
   }
 
+  // Google register
 
+  final EmailOTP _emailOtp = EmailOTP();
 
-  // Google register 
+  Future<void> registerWithGoogle(BuildContext context) async {
+    try {
+      await _googleSignIn.signOut();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return;
+      }
 
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
 
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
 
+      if (user != null) {
+        await addUserToFirestore(user);
+        _emailOtp.setConfig(
+          appEmail: 'makethon0@gmail.com',
+          appName: 'sarai',
+          userEmail: user.email!,
+        );
 
-  // Google login
+        final bool otpSent = await _emailOtp.sendOTP();
+        print("OTP Sent: $otpSent");
 
-
-
-
-
-  // Handle account exists error
-  void _handleAccountExistsError(BuildContext context, FirebaseAuthException e) async {
-    String email = e.email!;
-    List<String> signInMethods = await _auth.fetchSignInMethodsForEmail(email);
-
-    if (signInMethods.contains('google.com')) {
-      _showDialog(context, 'Error', 'Account exists with Google. Please sign in with Google.', false);
-    } else if (signInMethods.contains('password')) {
-      _showDialog(context, 'Error', 'Account exists with Email. Please sign in with Email/Password.', false);
-    } else {
-      _showDialog(context, 'Error', 'Please sign in with the correct provider.', false);
+        if (otpSent) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => OtpScreen(user: user),
+            ),
+          );
+        } else {
+          print("Error: Failed to send OTP");
+        }
+      }
+    } catch (e) {
+      print("Error during Google registration: $e");
     }
   }
 
-  void _showDialog(BuildContext context, String title, String content, bool isSuccess) {
+  Future<void> addUserToFirestore(User user) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('users').doc(user.uid).set({
+        'uid': user.uid,
+        'email': user.email,
+        'displayName': user.displayName,
+        'photoURL': user.photoURL,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print("Error adding user to Firestore: $e");
+    }
+  }
+
+  // Google login
+
+  Future<void> loginWithGoogle(BuildContext context) async {
+    try {
+      await _googleSignIn.signOut();
+
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
+      if (user == null) {
+        _showDialog(context, 'Error',
+            'An error occurred during sign-in. Please try again.', false);
+        return;
+      }
+      bool isRegistered = await checkUserRegistration(user.email);
+
+      if (isRegistered) {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => PhoneScreen(user: user),
+        ));
+      } else {
+        _showDialog(context, 'Registration Required',
+            'This email is not registered. Please register first.', false);
+      }
+    } catch (e) {
+      print("Error during Google login: $e");
+      _showDialog(context, 'Error',
+          'An error occurred during sign-in. Please try again.', false);
+    }
+  }
+
+  Future<bool> checkUserRegistration(String? email) async {
+    if (email == null) return false;
+
+    try {
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        return false;
+      }
+
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      final QuerySnapshot snapshot = await firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      if (e is FirebaseException) {
+        print("Firestore Error Code: ${e.code}");
+        print("Firestore Error Message: ${e.message}");
+      }
+      return false;
+    } finally {
+      print("Exiting checkUserRegistration function");
+    }
+  }
+
+  void _handleAccountExistsError(
+      BuildContext context, FirebaseAuthException e) async {
+    String email = e.email!;
+    bool isRegistered = await checkUserRegistration(email);
+
+    if (isRegistered) {
+      _showDialog(context, 'Error',
+          'Account exists. Please sign in with the correct provider.', false);
+    } else {
+      _showDialog(context, 'Error',
+          'No account found with this email. Please register first.', false);
+    }
+  }
+
+  void _showDialog(
+      BuildContext context, String title, String content, bool isSuccess) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
           content: Text(content),
-          actions: <Widget>[
+          actions: [
             TextButton(
-              child: Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              child: Text('OK'),
             ),
           ],
         );
@@ -215,4 +343,6 @@ class AuthService {
   User? getCurrentUser() {
     return _auth.currentUser;
   }
+
+  generateOtp() {}
 }
