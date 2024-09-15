@@ -8,7 +8,7 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Register with email and password
+  // Email/Password register
   Future<UserCredential?> registerWithEmailAndPassword(
     String email,
     String password,
@@ -48,7 +48,9 @@ class AuthService {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool('isLoggedIn') ?? false;
   }
-  // Sign in with email and password
+  
+
+ // Email/pasword Login
   Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -64,35 +66,10 @@ class AuthService {
       return null;
     }
   }
+  
 
-  // Sign in with Google
-  Future<UserCredential?> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        // User canceled the sign-in
-        return null;
-      }
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      UserCredential userCredential = await _auth.signInWithCredential(credential);
-      return userCredential;
-    } on FirebaseAuthException catch (e) {
-      print("FirebaseAuthException: ${e.message}");
-      return null;
-    } catch (e) {
-      print("General error: $e");
-      return null;
-    }
-  }
-
-
-
+  //  Github register 
+ 
  Future<UserCredential?> registerWithGitHub(BuildContext context) async {
     try {
       // GitHub sign-in parameters
@@ -123,8 +100,6 @@ class AuthService {
         // Check if user is already registered
         final UserCredential userCredential = await _auth.signInWithCredential(githubCredential);
         
-        // You can also store additional user details in Firestore here if needed
-        
         return userCredential;
       } else {
         print("GitHub registration failed or was canceled");
@@ -136,7 +111,8 @@ class AuthService {
     }
   }
 
-  // GitHub Login
+  // Github Login
+  
   // ignore: body_might_complete_normally_nullable
   Future<UserCredential?> loginWithGitHub(BuildContext context) async {
     try {
@@ -181,6 +157,19 @@ class AuthService {
       return null;
     }
   }
+
+
+
+  // Google register 
+
+
+
+
+  // Google login
+
+
+
+
 
   // Handle account exists error
   void _handleAccountExistsError(BuildContext context, FirebaseAuthException e) async {

@@ -27,6 +27,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (providerId == 'github.com') {
         print('GitHub user detected');
       }
+      if(providerId == 'google.com'){
+        print('Google user detected');
+      }
     }
   }
 

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sarai/services/auth_service.dart';
@@ -12,6 +13,7 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -38,6 +40,10 @@ class _LoginScreenState extends State<LoginScreen>
     _passwordController.dispose();
     super.dispose();
   }
+ 
+
+
+  // normal email/ password 
 
   Future<void> _signIn() async {
     setState(() {
@@ -57,8 +63,16 @@ class _LoginScreenState extends State<LoginScreen>
         email: email,
         password: password,
       );
-      // Navigate to home screen
+      
+    // Check if the user exists in Firebase Authentication
+    User? user = userCredential.user;
+
+    if (user != null) {
+      // User exists, navigate to home screen
       Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      _showDialog(context, 'Login Error', 'User not found in Firebase.', false);
+    }
     } catch (e) {
       _showDialog(context, 'Login Error', e.toString(), false);
     } finally {
@@ -236,7 +250,14 @@ class _LoginScreenState extends State<LoginScreen>
                       children: [
                         _buildAnimatedIcon('assets/images/google_icon.png', () {
                           // Google login implementation here
+
+
+                          // from auth service
+
+
                         }, _isGooglePressed),
+
+
                         const SizedBox(width: 20),
                         _buildAnimatedIcon('assets/images/github_icon.png',
                             () async {
