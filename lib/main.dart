@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
         '/home': (context) => const HomeScreen(),
-        // Remove the placeholder route for OTP screen
+       
       },
     );
   }

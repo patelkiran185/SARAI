@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:github_signin_promax/github_signin_promax.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 class AuthService {
@@ -118,7 +116,7 @@ class AuthService {
         ),
       ) as GithubSignInResponse;
 
-      if (response != null && response.accessToken != null) {
+      if (response.accessToken != null) {
         // GitHub credentials
         final AuthCredential githubCredential = GithubAuthProvider.credential(response.accessToken!);
         
@@ -139,12 +137,13 @@ class AuthService {
   }
 
   // GitHub Login
+  // ignore: body_might_complete_normally_nullable
   Future<UserCredential?> loginWithGitHub(BuildContext context) async {
     try {
-       var params = GithubSignInParams(
-        clientId: dotenv.env['GITHUB_CLIENT_ID']!,
-        clientSecret: dotenv.env['GITHUB_CLIENT_SECRET']!,
-        redirectUrl: dotenv.env['GITHUB_REDIRECT_URL']!,
+        var params = GithubSignInParams(
+        clientId: 'Ov23lidczkXUiqnUJChA',
+        clientSecret: 'dd1e0be5b4383720053fa4e0fbfac30e02206636',
+        redirectUrl: 'https://sarai-4f66a.firebaseapp.com/__/auth/handler',
         scopes: 'read:user,user:email',
       );
 
@@ -160,7 +159,7 @@ class AuthService {
         ),
       ) as GithubSignInResponse;
 
-      if (response != null && response.accessToken != null) {
+      if (response.accessToken != null) {
         final AuthCredential githubCredential = GithubAuthProvider.credential(response.accessToken!);
 
         try {
