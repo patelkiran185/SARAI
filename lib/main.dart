@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sarai/screens/alerts.dart';
+import 'package:sarai/screens/search.dart';
+import 'package:sarai/screens/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login.dart';
 import 'screens/register.dart';
@@ -46,7 +49,9 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
         '/home': (context) => const HomeScreen(),
-       
+        '/settings': (context) => SettingsScreen(),
+        '/alerts': (context) => AlertsScreen(),
+        '/search':(context) => SearchScreen(),
       },
     );
   }

@@ -86,6 +86,7 @@ class _OtpScreenState extends State<OtpScreen> {
       setState(() {
         _errorMessage = 'Invalid OTP. Please try again.';
       });
+      await _sendOtp();
     }
   }
 
