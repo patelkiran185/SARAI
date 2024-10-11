@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:twilio_flutter/twilio_flutter.dart';
 import 'home_screen.dart';
 
@@ -15,14 +16,21 @@ class _PhoneScreenState extends State<PhoneScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _countryCodeController = TextEditingController(text: '+91');
   final TextEditingController _otpController = TextEditingController();
-  final TwilioFlutter _twilioFlutter = TwilioFlutter(
-    accountSid: 'AC8122562fd9142dc148dad907fd456deb',
-    authToken: 'c9336128bbfd429bd3039ea87c6ebfde',
-    twilioNumber: '+15732026629',
-  );
+late TwilioFlutter _twilioFlutter;
   String _generatedOtp = '';
   bool _otpSent = false;
   bool _isLoading = false; 
+
+ @override
+  void initState() {
+    super.initState();
+    _twilioFlutter = TwilioFlutter(
+      accountSid: dotenv.env['TWILIO_ACCOUNT_SID']!,
+      authToken: dotenv.env['TWILIO_AUTH_TOKEN']!,
+      twilioNumber: dotenv.env['TWILIO_NUMBER']!,
+    );
+  }
+
 
   Future<void> _sendOtp() async {
     String phoneNumber = _phoneController.text.trim();

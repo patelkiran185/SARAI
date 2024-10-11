@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -21,9 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   File? _image;
-    bool _isUploading = false;
-  bool _isAnalyzing = false;
-
+  bool _isClassifying = false;
+   String? _classificationResult;
 
   @override
   void initState() {
@@ -78,100 +76,71 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-
-
-
-
-     Future<void> _pickImage() async {
+  Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     setState(() {
       if (pickedFile != null) {
         _image = File(pickedFile.path);
-        _uploadImage();
+        _classifyImage();
       } else {
         print('No image selected.');
       }
     });
   }
-Future<void> _uploadImage() async {
+
+   Future<void> _classifyImage() async {
     if (_image == null) return;
 
     setState(() {
-      _isUploading = true;
+      _isClassifying = true;
+      _classificationResult = null;
     });
 
     try {
-      final request = http.MultipartRequest('POST', Uri.parse('http://192.168.17.197:5000/upload'));
-      request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
-      final response = await request.send();
+      List<int> imageBytes = await _image!.readAsBytes();
+      String base64Image = base64Encode(imageBytes);
+
+      final response = await http.post(
+        Uri.parse('${dotenv.env['BACKEND_URL']}/classify'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'image': base64Image}),
+      );
 
       if (response.statusCode == 200) {
-        final responseData = await response.stream.bytesToString();
-        final jsonResponse = json.decode(responseData);
-        if (jsonResponse['success'] == true) {
-          _showUploadSuccessMessage();
-        } else {
-          _showErrorDialog('Upload failed: ${jsonResponse['error']}');
-        }
+        final jsonResponse = json.decode(response.body);
+        setState(() {
+          _classificationResult = jsonResponse['predicted_class_name'];
+        });
       } else {
-        _showErrorDialog('Failed to upload image. Status code: ${response.statusCode}');
+        setState(() {
+          _classificationResult = 'Failed to classify image. Status code: ${response.statusCode}';
+        });
       }
     } catch (e) {
-      _showErrorDialog('An error occurred during upload: $e');
+      setState(() {
+        _classificationResult = 'An error occurred during classification: $e';
+      });
     } finally {
       setState(() {
-        _isUploading = false;
+        _isClassifying = false;
       });
     }
   }
 
- void _showUploadSuccessMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Image uploaded and sent to the model successfully!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-Future<void> _analyzeImage() async {
-    if (_image == null) return;
-
+void _clearClassification() {
     setState(() {
-      _isAnalyzing = true;
+      _image = null;
+      _classificationResult = null;
     });
-
-    try {
-      final request = http.MultipartRequest('POST', Uri.parse('http://192.168.17.197:5000/analyze'));
-      request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
-      final response = await request.send();
-
-      if (response.statusCode == 200) {
-        final responseData = await response.stream.bytesToString();
-        final jsonResponse = json.decode(responseData);
-        if (jsonResponse['success'] == true) {
-          _showResultDialog(jsonResponse['result']);
-        } else {
-          _showErrorDialog('Analysis failed: ${jsonResponse['error']}');
-        }
-      } else {
-        _showErrorDialog('Failed to analyze image. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      _showErrorDialog('An error occurred during analysis: $e');
-    } finally {
-      setState(() {
-        _isAnalyzing = false;
-      });
-    }
   }
+
 
   void _showResultDialog(String result) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Analysis Result'),
+          title: Text('Classification Result'),
           content: Text('The image is classified as: $result'),
           actions: [
             TextButton(
@@ -185,7 +154,6 @@ Future<void> _analyzeImage() async {
       },
     );
   }
-
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -207,7 +175,6 @@ Future<void> _analyzeImage() async {
     );
   }
 
-
   Future<void> _logout(BuildContext context) async {
     print('Logging out');
     await FirebaseAuth.instance.signOut();
@@ -223,7 +190,8 @@ Future<void> _analyzeImage() async {
       canPop: true,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('SAR GenAI Analyzer', style: TextStyle(color: Colors.white)),centerTitle: true,
+          title: Text('SAR GenAI Analyzer', style: TextStyle(color: Colors.white)),
+          centerTitle: true,
           backgroundColor: Colors.blue,
           actions: [
             IconButton(
@@ -242,12 +210,12 @@ Future<void> _analyzeImage() async {
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // Number of columns
+                    crossAxisCount: 2,
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
-                    childAspectRatio: 1, // Aspect ratio of the grid items
+                    childAspectRatio: 1,
                   ),
-                  itemCount: 5, // Number of feature cards
+                  itemCount: 5,
                   itemBuilder: (context, index) {
                     switch (index) {
                       case 0:
@@ -266,7 +234,7 @@ Future<void> _analyzeImage() async {
                   },
                 ),
                 SizedBox(height: 20),
-                _buildAnalyzeSection(),
+                _buildClassifySection(),
                 SizedBox(height: 20),
                 _buildRecentAnalyses(),
               ],
@@ -279,10 +247,8 @@ Future<void> _analyzeImage() async {
             setState(() {
               _currentIndex = index;
             });
-            // Handle navigation here
             switch (index) {
               case 0:
-                // Already on home screen
                 break;
               case 1:
                 Navigator.pushReplacementNamed(context, '/search');
@@ -320,35 +286,67 @@ Future<void> _analyzeImage() async {
     );
   }
 
-  Widget _buildAnalyzeSection() {
+   Widget _buildClassifySection() {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Analyze SAR Image', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Classify SAR Image', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 16),
+            if (_image != null)
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: FileImage(_image!),
+                    fit: BoxFit.cover,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             SizedBox(height: 16),
             ElevatedButton.icon(
               icon: Icon(Icons.upload),
-              label: Text(_isUploading ? 'Uploading...' : 'Tap to upload image'),
-              onPressed: _isUploading ? null : _pickImage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[200],
-                foregroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(vertical: 16),
-              ),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              child: Text(_isAnalyzing ? 'Analyzing...' : 'Analyze Image'),
-              onPressed: (_image != null && !_isAnalyzing) ? _analyzeImage : null,
+              label: Text(_isClassifying ? 'Classifying...' : 'Tap to classify image'),
+              onPressed: _isClassifying ? null : _pickImage,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 16),
               ),
             ),
+            if (_classificationResult != null) ...[
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Classification Result:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(_classificationResult!),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _clearClassification,
+                      child: Text('Clear'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

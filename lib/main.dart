@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sarai/screens/alerts.dart';
 import 'package:sarai/screens/search.dart';
 import 'package:sarai/screens/settings.dart';
@@ -15,6 +16,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+
+  try {
+    await dotenv.load(fileName: ".env");
+    print("Loaded .env file successfully");
+  } catch (e) {
+    print("Failed to load .env file: $e");
+    // You might want to set some default values here if needed
+  }
+
+  
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
