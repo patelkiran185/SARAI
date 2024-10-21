@@ -32,39 +32,82 @@ def preprocess_image(image_bytes):
 # Create Flask app
 app = Flask(__name__)
 
-@app.route('/classify', methods=['POST'])
-def classify_image():
-    data = request.json  # Get the JSON data from the request
-    image_base64 = data.get('image')  # Get the base64 image string
-    
-    if not image_base64:
-        return jsonify({"error": "No image provided"}), 400
-    
-    # Decode the base64 image
-    print("Image received")
-    image_bytes = base64.b64decode(image_base64)
-    
-    # Preprocess the image
-    input_tensor = preprocess_image(image_bytes)
-    input_tensor = np.expand_dims(input_tensor, axis=0)  # Add batch dimension
-    print("Image preprocessed")
-    
-    # Run inference
-    ort_inputs = {ort_session.get_inputs()[0].name: input_tensor}
-    ort_outs = ort_session.run(None, ort_inputs)
-    print("Inference completed")
-    
-    # Get predictions
-    predictions = ort_outs[0]  # Assuming the model outputs a single array of predictions
-    predicted_class_index = np.argmax(predictions, axis=1)  # Get the index of the highest probability
-    predicted_class_name = class_names[int(predicted_class_index[0])]  # Get the class name
-    print("Prediction:", predicted_class_name)
+@app.route('/')
+def home():
+    return "Welcome to the Flask App!"
 
-    # Return the result
-    return jsonify({
-        "predicted_class_index": int(predicted_class_index[0]),
-        "predicted_class_name": predicted_class_name
-    })
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
+@app.route('/classify', methods=['GET','POST'])
+# def classify_image():
+#     data = request.json  # Get the JSON data from the request
+#     image_base64 = data.get('image')  # Get the base64 image string
+    
+#     if not image_base64:
+#         return jsonify({"error": "No image provided"}), 400
+    
+#     # Decode the base64 image
+#     print("Image received")
+#     image_bytes = base64.b64decode(image_base64)
+    
+#     # Preprocess the image
+#     input_tensor = preprocess_image(image_bytes)
+#     input_tensor = np.expand_dims(input_tensor, axis=0)  # Add batch dimension
+#     print("Image preprocessed")
+    
+#     # Run inference
+#     ort_inputs = {ort_session.get_inputs()[0].name: input_tensor}
+#     ort_outs = ort_session.run(None, ort_inputs)
+#     print("Inference completed")
+    
+#     # Get predictions
+#     predictions = ort_outs[0]  # Assuming the model outputs a single array of predictions
+#     predicted_class_index = np.argmax(predictions, axis=1)  # Get the index of the highest probability
+#     predicted_class_name = class_names[int(predicted_class_index[0])]  # Get the class name
+#     print("Prediction:", predicted_class_name)
+
+#     # Return the result
+#     return jsonify({
+#         "predicted_class_index": int(predicted_class_index[0]),
+#         "predicted_class_name": predicted_class_name
+#     })
+def classify_image():
+    if request.method == 'POST':
+        data = request.json  # Get the JSON data from the request
+        image_base64 = data.get('image')  # Get the base64 image string
+        
+        if not image_base64:
+            return jsonify({"error": "No image provided"}), 400
+        
+        # Decode the base64 image
+        print("Image received")
+        image_bytes = base64.b64decode(image_base64)
+        
+        # Preprocess the image
+        input_tensor = preprocess_image(image_bytes)
+        input_tensor = np.expand_dims(input_tensor, axis=0)  # Add batch dimension
+        print("Image preprocessed")
+        
+        # Run inference
+        ort_inputs = {ort_session.get_inputs()[0].name: input_tensor}
+        ort_outs = ort_session.run(None, ort_inputs)
+        print("Inference completed")
+        
+        # Get predictions
+        predictions = ort_outs[0]  # Assuming the model outputs a single array of predictions
+        predicted_class_index = np.argmax(predictions, axis=1)  # Get the index of the highest probability
+        predicted_class_name = class_names[int(predicted_class_index[0])]  # Get the class name
+        print("Prediction:", predicted_class_name)
+
+        # Return the result
+        return jsonify({
+            "predicted_class_index": int(predicted_class_index[0]),
+            "predicted_class_name": predicted_class_name
+        })
+    else:
+        return "This endpoint is for POST requests to classify images."
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0"  ,port=5000)

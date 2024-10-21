@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../sub-screens/aiins.dart';
+import '../sub-screens/cropmap.dart';
+import '../sub-screens/flooddet.dart';
+import '../sub-screens/hist.dart';
+import '../sub-screens/imagecolrisation.dart';
 import '../utils/bottomNavigation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -273,6 +278,39 @@ void _clearClassification() {
       child: InkWell(
         onTap: () {
           // Handle feature tap
+            if (title == 'SAR Image Colorization') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SARColorizationScreen()),
+        );
+      }  if(title == 'Flood Area Detection'){
+        Navigator.push(
+context,
+MaterialPageRoute(builder: (context)=> FloodAreaDetectionScreen()),
+
+        );
+      }
+       if(title == 'Crop Mapping'){
+        Navigator.push(
+context,
+MaterialPageRoute(builder: (context)=> CropMappingScreen()),
+
+        );
+      }
+       if(title == 'Historical Analysis'){
+        Navigator.push(
+context,
+MaterialPageRoute(builder: (context)=> HistoricalAnalysisScreen()),
+
+        );
+      }
+       if(title == 'AI Insights'){
+        Navigator.push(
+context,
+MaterialPageRoute(builder: (context)=> AIInsightsScreen()),
+
+        );
+      }
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
