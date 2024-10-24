@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 
 class SARColorizationScreen extends StatefulWidget {
+  const SARColorizationScreen({super.key});
+
   @override
   _SARColorizationScreenState createState() => _SARColorizationScreenState();
 }
@@ -25,7 +27,7 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
       });
 
       // Simulating colorization process
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(const Duration(seconds: 3));
       
       // In a real app, you would send the image to your GenAI model here
       // and receive the colorized image back
@@ -42,7 +44,7 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
       final result = await GallerySaver.saveImage(_colorizedImage!.path);
       if (result != null && result) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Image saved to gallery')),
+          const SnackBar(content: Text('Image saved to gallery')),
         );
       }
     }
@@ -52,7 +54,7 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('SAR Image Colorization'),
+        title: const Text('SAR Image Colorization'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -62,25 +64,25 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
             children: [
               ElevatedButton(
                 onPressed: _uploadImage,
-                child: Text('Upload SAR Image'),
+                child: const Text('Upload SAR Image'),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               if (_image != null) ...[
-                Text('Original Image:', style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 8),
+                const Text('Original Image:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
                 Image.file(_image!),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
               ],
               if (_isLoading)
-                Center(child: CircularProgressIndicator())
+                const Center(child: CircularProgressIndicator())
               else if (_colorizedImage != null) ...[
-                Text('Colorized Image:', style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 8),
+                const Text('Colorized Image:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
                 Image.file(_colorizedImage!),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _downloadImage,
-                  child: Text('Download Colorized Image'),
+                  child: const Text('Download Colorized Image'),
                 ),
               ],
             ],

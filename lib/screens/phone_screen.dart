@@ -6,7 +6,7 @@ import 'home_screen.dart';
 
 class PhoneScreen extends StatefulWidget {
   final User user;
-  PhoneScreen({required this.user});
+  const PhoneScreen({super.key, required this.user});
 
   @override
   _PhoneScreenState createState() => _PhoneScreenState();
@@ -68,10 +68,10 @@ late TwilioFlutter _twilioFlutter;
     String enteredOtp = _otpController.text.trim();
     if (enteredOtp == _generatedOtp) {
       
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => HomeScreen(),
+        builder: (context) => const HomeScreen(),
       ));
     } else {
       _showErrorDialog('Invalid OTP. Please try again.');
@@ -86,7 +86,7 @@ late TwilioFlutter _twilioFlutter;
     final RegExp phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
     if (phoneRegex.hasMatch(countryCode + phoneNumber)) {
       if (!countryCode.startsWith('+')) {
-        countryCode = '+' + countryCode;
+        countryCode = '+$countryCode';
       }
       return countryCode + phoneNumber;
     }
@@ -98,14 +98,14 @@ late TwilioFlutter _twilioFlutter;
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Error'),
+          title: const Text('Error'),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -124,13 +124,13 @@ late TwilioFlutter _twilioFlutter;
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 Image.asset(
                   'assets/images/otp.png',
                   height: 180,
                   width: 180,
                 ),
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 Text(
                   'Verify Phone',
                   style: TextStyle(
@@ -140,7 +140,7 @@ late TwilioFlutter _twilioFlutter;
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey[300]!),
@@ -148,16 +148,16 @@ late TwilioFlutter _twilioFlutter;
                   ),
                   child: Row(
                     children: [
-                      Container(
+                      SizedBox(
                         width: 60,
                         child: TextField(
                           controller: _countryCodeController,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(horizontal: 12),
                           ),
                           keyboardType: TextInputType.phone,
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                       Container(
@@ -168,21 +168,28 @@ late TwilioFlutter _twilioFlutter;
                       Expanded(
                         child: TextField(
                           controller: _phoneController,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Phone Number',
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(horizontal: 16),
                           ),
                           keyboardType: TextInputType.phone,
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _sendOtp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[600],
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: Text(
                     'Send OTP',
                     style: TextStyle(
@@ -190,15 +197,8 @@ late TwilioFlutter _twilioFlutter;
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[600],
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 if (_otpSent) ...[
                   TextField(
                     controller: _otpController,
@@ -210,16 +210,23 @@ late TwilioFlutter _twilioFlutter;
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     ),
                     keyboardType: TextInputType.number,
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   _isLoading
-                      ? Center(child: CircularProgressIndicator()) 
+                      ? const Center(child: CircularProgressIndicator()) 
                       : ElevatedButton(
                           onPressed: _verifyOtp,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[600],
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                           child: Text(
                             'Verify OTP',
                             style: TextStyle(
@@ -227,15 +234,8 @@ late TwilioFlutter _twilioFlutter;
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[600],
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
                         ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TextButton(
                     onPressed: _sendOtp,
                     child: Text(

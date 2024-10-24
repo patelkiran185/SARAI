@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
 class FloodAreaDetectionScreen extends StatelessWidget {
-  const FloodAreaDetectionScreen({Key? key}) : super(key: key);
+  const FloodAreaDetectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Flood Area Detection'),
+        title: const Text('Flood Area Detection'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -19,14 +19,14 @@ class FloodAreaDetectionScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildMapView(),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildDetectionControls(),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Recent Detections',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Expanded(
               child: _buildRecentDetectionsList(),
             ),
@@ -57,18 +57,18 @@ class FloodAreaDetectionScreen extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () {},
-          child: Text('New Detection'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.black,
           ),
+          child: Text('New Detection'),
         ),
-        Spacer(),
+        const Spacer(),
         IconButton(
-          icon: Icon(Icons.calendar_today),
+          icon: const Icon(Icons.calendar_today),
           onPressed: () {},
         ),
         IconButton(
-          icon: Icon(Icons.filter_list),
+          icon: const Icon(Icons.filter_list),
           onPressed: () {},
         ),
       ],
@@ -88,7 +88,7 @@ class FloodAreaDetectionScreen extends StatelessWidget {
   Widget _buildDetectionItem(String title, String severity, String timeAgo) {
     return Card(
       child: ListTile(
-        leading: Icon(Icons.warning, color: Colors.red),
+        leading: const Icon(Icons.warning, color: Colors.red),
         title: Text(title),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

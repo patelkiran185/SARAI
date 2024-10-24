@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CropMappingScreen extends StatefulWidget {
-  const CropMappingScreen({Key? key}) : super(key: key);
+  const CropMappingScreen({super.key});
 
   @override
   _CropMappingScreenState createState() => _CropMappingScreenState();
@@ -15,10 +15,10 @@ class _CropMappingScreenState extends State<CropMappingScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Crop Mapping'),
+        title: const Text('Crop Mapping'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -27,11 +27,11 @@ class _CropMappingScreenState extends State<CropMappingScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildImageSection(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildFieldInfo(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildTimeline(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildFieldAnalysis(),
             ],
           ),
@@ -47,15 +47,15 @@ class _CropMappingScreenState extends State<CropMappingScreen> {
           child: Container(
             height: 150,
             color: Colors.grey[300],
-            child: Center(child: Text('SAR Image')),
+            child: const Center(child: Text('SAR Image')),
           ),
         ),
-        SizedBox(width: 16),
+        const SizedBox(width: 16),
         Expanded(
           child: Container(
             height: 150,
             color: Colors.green[100],
-            child: Center(child: Text('Ground Image')),
+            child: const Center(child: Text('Ground Image')),
           ),
         ),
       ],
@@ -66,12 +66,12 @@ class _CropMappingScreenState extends State<CropMappingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Field: Wheat-001', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
+        const Text('Field: Wheat-001', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
         Row(
           children: [
-            Text('Crop Health:', style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(width: 8),
+            const Text('Crop Health:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(width: 8),
             Row(
               children: List.generate(
                 5,
@@ -91,20 +91,20 @@ class _CropMappingScreenState extends State<CropMappingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Timeline', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
+        const Text('Timeline', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             IconButton(
-              icon: Icon(Icons.arrow_back_ios),
+              icon: const Icon(Icons.arrow_back_ios),
               onPressed: () {},
             ),
             _buildMonthButton('May'),
             _buildMonthButton('Jun'),
             _buildMonthButton('Jul'),
             IconButton(
-              icon: Icon(Icons.arrow_forward_ios),
+              icon: const Icon(Icons.arrow_forward_ios),
               onPressed: () {},
             ),
           ],
@@ -116,10 +116,10 @@ class _CropMappingScreenState extends State<CropMappingScreen> {
   Widget _buildMonthButton(String month) {
     return ElevatedButton(
       onPressed: () => setState(() => selectedMonth = month),
-      child: Text(month),
       style: ElevatedButton.styleFrom(
         backgroundColor: selectedMonth == month ? Colors.black : Colors.grey,
       ),
+      child: Text(month),
     );
   }
 
@@ -127,12 +127,12 @@ class _CropMappingScreenState extends State<CropMappingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Field Analysis', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        SizedBox(height: 16),
+        const Text('Field Analysis', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
         _buildAnalysisItem('Soil Moisture', 0.7),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         _buildAnalysisItem('Crop Yield Estimate', 0.9),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         _buildAnalysisItem('Pest Risk', 0.2),
       ],
     );
@@ -143,11 +143,11 @@ class _CropMappingScreenState extends State<CropMappingScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         LinearProgressIndicator(
           value: value,
           backgroundColor: Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+          valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
         ),
       ],
     );

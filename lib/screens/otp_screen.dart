@@ -8,7 +8,7 @@ import 'home_screen.dart';
 class OtpScreen extends StatefulWidget {
   final User user;
 
-  OtpScreen({required this.user});
+  const OtpScreen({super.key, required this.user});
 
   @override
   _OtpScreenState createState() => _OtpScreenState();
@@ -37,7 +37,7 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   void _startResendTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_resendTimer > 0) {
         setState(() {
           _resendTimer--;
@@ -78,7 +78,7 @@ class _OtpScreenState extends State<OtpScreen> {
       await prefs.setBool('isLoggedIn', true);
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => HomeScreen(),
+          builder: (context) => const HomeScreen(),
         ),
       );
     } else {
@@ -101,7 +101,7 @@ class _OtpScreenState extends State<OtpScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Verify OTP', style: TextStyle(color: Colors.white)),
+        title: const Text('Verify OTP', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -113,10 +113,10 @@ class _OtpScreenState extends State<OtpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: 40),
-              Icon(Icons.email, size: 80, color: Colors.blue),
-              SizedBox(height: 40),
-              Text(
+              const SizedBox(height: 40),
+              const Icon(Icons.email, size: 80, color: Colors.blue),
+              const SizedBox(height: 40),
+              const Text(
                 'Verify Your Email',
                 style: TextStyle(
                     fontSize: 24,
@@ -124,67 +124,67 @@ class _OtpScreenState extends State<OtpScreen> {
                     color: Colors.blue),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 'A verification code has been sent to ${widget.user.email}. Please enter the OTP below to verify your account.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               ),
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
               TextField(
                 controller: _otpController,
                 decoration: InputDecoration(
                   labelText: 'Enter OTP',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.blue),
+                    borderSide: const BorderSide(color: Colors.blue),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
                   ),
-                  prefixIcon: Icon(Icons.lock, color: Colors.blue),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.blue),
                 ),
                 keyboardType: TextInputType.number,
-                style: TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 18),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Center(
-                child: Container(
+                child: SizedBox(
                   width: 150, // Set the width to 100
                   child: ElevatedButton(
                     onPressed: _verifyOtp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(50), // Make the button round
+                      ),
+                    ),
                     child: Text(
                       'Verify OTP',
                       style: TextStyle(
                           fontSize: 18,
                           color: Colors.white), // Set text color to white
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(50), // Make the button round
-                      ),
-                    ),
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 _errorMessage,
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextButton(
                 onPressed: _resendTimer == 0 ? _sendOtp : null,
                 child: Text(
                   _resendTimer > 0
                       ? 'Resend OTP in $_resendTimer seconds'
                       : 'Resend OTP',
-                  style: TextStyle(color: Colors.blue),
+                  style: const TextStyle(color: Colors.blue),
                 ),
               ),
             ],

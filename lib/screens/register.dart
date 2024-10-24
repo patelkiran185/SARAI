@@ -7,6 +7,8 @@ import 'package:sarai/screens/login.dart';
 import 'package:sarai/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }
@@ -128,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(),
+          builder: (context) => const HomeScreen(),
         ),
       );
     } catch (e) {
@@ -153,7 +155,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         );
@@ -227,7 +229,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         return false;
       },
       child: Scaffold(
-        backgroundColor: Color(0xFF4A90E2),
+        backgroundColor: const Color(0xFF4A90E2),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Center(
@@ -255,9 +257,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                       ),
                       child: DropdownButtonFormField<String>(
                         value: _selectedUserType,
-                        hint: Text('Select User Type',
+                        hint: const Text('Select User Type',
                             style: TextStyle(color: Colors.white54)),
-                        items: [
+                        items: const [
                           DropdownMenuItem(
                               value: 'Researcher', child: Text('Researcher')),
                           DropdownMenuItem(
@@ -277,12 +279,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                           fillColor: Colors.transparent,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.white),
+                            borderSide: const BorderSide(color: Colors.white),
                           ),
-                          labelStyle: TextStyle(color: Colors.white),
+                          labelStyle: const TextStyle(color: Colors.white),
                         ),
-                        dropdownColor: Color.fromARGB(255, 53, 132, 197),
-                        style: TextStyle(color: Colors.white),
+                        dropdownColor: const Color.fromARGB(255, 53, 132, 197),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 15),
@@ -297,19 +299,19 @@ class _RegisterScreenState extends State<RegisterScreen>
                         scale: _scaleAnimation,
                         child: ElevatedButton(
                           onPressed: _register,
-                          child: _isLoading
-                              ? const CircularProgressIndicator()
-                              : const Text('Register',
-                                  style: TextStyle(color: Colors.grey)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 const Color.fromARGB(255, 247, 245, 245),
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 horizontal: 50, vertical: 15),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text('Register',
+                                  style: TextStyle(color: Colors.grey)),
                         ),
                       ),
                     ),
@@ -353,7 +355,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      HomeScreen(), // Ensure you have a LoginPage widget or route
+                                      const HomeScreen(), // Ensure you have a LoginPage widget or route
                                 ),
                               );
                             } else {
@@ -378,7 +380,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                           ),
                         );
                       },
-                      child: Text(
+                      child: const Text(
                         "Already have an account? Login here",
                         style: TextStyle(
                           color: Colors.white,

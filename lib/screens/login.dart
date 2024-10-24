@@ -5,6 +5,8 @@ import 'package:sarai/services/auth_service.dart';
 import 'package:flutter/services.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -18,8 +20,8 @@ class _LoginScreenState extends State<LoginScreen>
   late Animation<double> _scaleAnimation;
   bool _isLoading = false;
   bool _isPasswordVisible = false;
-  bool _isGooglePressed = false;
-  bool _isGithubPressed = false;
+  final bool _isGooglePressed = false;
+  final bool _isGithubPressed = false;
 
   @override
   void initState() {
@@ -93,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen>
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         );
@@ -214,10 +216,6 @@ class _LoginScreenState extends State<LoginScreen>
                         scale: _scaleAnimation,
                         child: ElevatedButton(
                           onPressed: _signIn,
-                          child: _isLoading
-                              ? const CircularProgressIndicator()
-                              : const Text('Login',
-                                  style: TextStyle(color: Colors.grey)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 const Color.fromARGB(255, 247, 244, 248),
@@ -227,6 +225,10 @@ class _LoginScreenState extends State<LoginScreen>
                               borderRadius: BorderRadius.circular(25),
                             ),
                           ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text('Login',
+                                  style: TextStyle(color: Colors.grey)),
                         ),
                       ),
                     ),

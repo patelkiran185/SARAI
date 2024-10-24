@@ -44,8 +44,7 @@ class MyApp extends StatelessWidget {
   final bool isLoggedIn;
 
   const MyApp(
-      {Key? key, required this.hasSeenOnboarding, required this.isLoggedIn})
-      : super(key: key);
+      {super.key, required this.hasSeenOnboarding, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +71,7 @@ class SplashScreen extends StatefulWidget {
   final bool hasSeenOnboarding;
   final bool isLoggedIn;
 
-  const SplashScreen({Key? key, required this.hasSeenOnboarding, required this.isLoggedIn}) : super(key: key);
+  const SplashScreen({super.key, required this.hasSeenOnboarding, required this.isLoggedIn});
 
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -93,7 +92,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   _navigateToNextScreen() async {
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3));
 
     if (!widget.hasSeenOnboarding) {
       Navigator.pushReplacementNamed(context, '/onboarding');
@@ -108,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF4A90E2), Color(0xFF357ABD)],
             begin: Alignment.topLeft,
@@ -121,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: RadialGradient(
+              gradient: const RadialGradient(
                 colors: [Color(0xFFFFFFFF), Color(0xFFB3D1F3)],
                 stops: [0.3, 1.0],
               ),
@@ -130,11 +129,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   color: Colors.black.withOpacity(0.3),
                   spreadRadius: 5,
                   blurRadius: 10,
-                  offset: Offset(0, 5),
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
-            child: Center(
+            child: const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4A90E2)),
                 strokeWidth: 6,

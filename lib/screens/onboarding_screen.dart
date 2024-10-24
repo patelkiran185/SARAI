@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
   @override
   _OnboardingScreenState createState() => _OnboardingScreenState();
 }
@@ -69,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     (index) => buildDot(index, context),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -83,20 +85,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           _completeOnboarding();
                         } else {
                           _controller.nextPage(
-                            duration: Duration(milliseconds: 300),
+                            duration: const Duration(milliseconds: 300),
                             curve: Curves.easeIn,
                           );
                         }
                       },
-                      child: Text(
-                        _currentIndex == onboardingPages.length - 1 ? 'Get Started' : 'Next',
-                        style: TextStyle(color: Colors.white),
-                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey[800],
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
+                      ),
+                      child: Text(
+                        _currentIndex == onboardingPages.length - 1 ? 'Get Started' : 'Next',
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
                   ],
@@ -125,7 +127,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Container(
               height: 300,
               width: 300,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white,
               ),
@@ -133,13 +135,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Image.asset(data.imagePath, height: 200),
               ),
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             Text(
               data.title,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey[800]),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
@@ -158,7 +160,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Container(
       height: 10,
       width: 10,
-      margin: EdgeInsets.only(right: 5),
+      margin: const EdgeInsets.only(right: 5),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: _currentIndex == index ? Colors.grey[800] : Colors.grey[400],

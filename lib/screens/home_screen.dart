@@ -15,7 +15,7 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -57,15 +57,15 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Logout'),
-          content: Text('Are you sure you want to logout?'),
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
           actions: [
             TextButton(
               onPressed: () {
                 print('Logout dialog canceled');
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.of(context).pop();
                 _logout(context);
               },
-              child: Text('Logout'),
+              child: const Text('Logout'),
             ),
           ],
         );
@@ -145,14 +145,14 @@ void _clearClassification() {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Classification Result'),
+          title: const Text('Classification Result'),
           content: Text('The image is classified as: $result'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -165,14 +165,14 @@ void _clearClassification() {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Error'),
+          title: const Text('Error'),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -195,12 +195,12 @@ void _clearClassification() {
       canPop: true,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('SAR GenAI Analyzer', style: TextStyle(color: Colors.white)),
+          title: const Text('SAR GenAI Analyzer', style: TextStyle(color: Colors.white)),
           centerTitle: true,
           backgroundColor: Colors.blue,
           actions: [
             IconButton(
-              icon: Icon(Icons.logout, color: Colors.white),
+              icon: const Icon(Icons.logout, color: Colors.white),
               onPressed: () => _showLogoutDialog(context),
             ),
           ],
@@ -213,8 +213,8 @@ void _clearClassification() {
               children: [
                 GridView.builder(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
@@ -238,9 +238,9 @@ void _clearClassification() {
                     }
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildClassifySection(),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildRecentAnalyses(),
               ],
             ),
@@ -274,7 +274,7 @@ void _clearClassification() {
   Widget _buildFeatureCard(String title, IconData icon) {
     return Card(
       elevation: 2,
-      margin: EdgeInsets.all(8),
+      margin: const EdgeInsets.all(8),
       child: InkWell(
         onTap: () {
           // Handle feature tap
@@ -286,28 +286,28 @@ void _clearClassification() {
       }  if(title == 'Flood Area Detection'){
         Navigator.push(
 context,
-MaterialPageRoute(builder: (context)=> FloodAreaDetectionScreen()),
+MaterialPageRoute(builder: (context)=> const FloodAreaDetectionScreen()),
 
         );
       }
        if(title == 'Crop Mapping'){
         Navigator.push(
 context,
-MaterialPageRoute(builder: (context)=> CropMappingScreen()),
+MaterialPageRoute(builder: (context)=> const CropMappingScreen()),
 
         );
       }
        if(title == 'Historical Analysis'){
         Navigator.push(
 context,
-MaterialPageRoute(builder: (context)=> HistoricalAnalysisScreen()),
+MaterialPageRoute(builder: (context)=> const HistoricalAnalysisScreen()),
 
         );
       }
        if(title == 'AI Insights'){
         Navigator.push(
 context,
-MaterialPageRoute(builder: (context)=> AIInsightsScreen()),
+MaterialPageRoute(builder: (context)=> const AIInsightsScreen()),
 
         );
       }
@@ -316,8 +316,8 @@ MaterialPageRoute(builder: (context)=> AIInsightsScreen()),
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: Colors.blue, size: 40),
-            SizedBox(height: 8),
-            Text(title, style: TextStyle(fontSize: 12)),
+            const SizedBox(height: 8),
+            Text(title, style: const TextStyle(fontSize: 12)),
           ],
         ),
       ),
@@ -331,8 +331,8 @@ MaterialPageRoute(builder: (context)=> AIInsightsScreen()),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Classify SAR Image', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 16),
+            const Text('Classify SAR Image', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
             if (_image != null)
               Container(
                 height: 200,
@@ -344,21 +344,21 @@ MaterialPageRoute(builder: (context)=> AIInsightsScreen()),
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
-              icon: Icon(Icons.upload),
+              icon: const Icon(Icons.upload),
               label: Text(_isClassifying ? 'Classifying...' : 'Tap to classify image'),
               onPressed: _isClassifying ? null : _pickImage,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
             if (_classificationResult != null) ...[
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
@@ -366,20 +366,20 @@ MaterialPageRoute(builder: (context)=> AIInsightsScreen()),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Classification Result:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(_classificationResult!),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _clearClassification,
-                      child: Text('Clear'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
                       ),
+                      child: Text('Clear'),
                     ),
                   ],
                 ),
@@ -398,8 +398,8 @@ MaterialPageRoute(builder: (context)=> AIInsightsScreen()),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Recent Analyses', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 16),
+            const Text('Recent Analyses', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
             _buildAnalysisItem('Analysis #1', '2 hours ago'),
             _buildAnalysisItem('Analysis #2', '2 hours ago'),
             _buildAnalysisItem('Analysis #3', '2 hours ago'),

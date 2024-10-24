@@ -6,16 +6,16 @@ class BottomNavigation extends StatelessWidget {
   final Function(int) onItemSelected;
 
   const BottomNavigation({
-    Key? key,
+    super.key,
     required this.currentIndex,
     required this.onItemSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.blue,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(30),

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
 class AIInsightsScreen extends StatelessWidget {
-  const AIInsightsScreen({Key? key}) : super(key: key);
+  const AIInsightsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('AI Insights'),
+        title: const Text('AI Insights'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -20,7 +20,7 @@ class AIInsightsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildInsightsCard(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildRecommendedActionsCard(),
             ],
           ),
@@ -36,7 +36,7 @@ class AIInsightsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
                 Icon(Icons.bolt, color: Colors.amber),
                 SizedBox(width: 8),
@@ -46,9 +46,9 @@ class AIInsightsScreen extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 8),
-            Text('Our AI has analyzed recent SAR data and generated the following insights:'),
-            SizedBox(height: 16),
+            const SizedBox(height: 8),
+            const Text('Our AI has analyzed recent SAR data and generated the following insights:'),
+            const SizedBox(height: 16),
             _buildInsightItem(
               icon: Icons.trending_up,
               title: 'Crop Yield Prediction',
@@ -77,12 +77,12 @@ class AIInsightsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: Colors.blue),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(description),
               ],
             ),
@@ -99,11 +99,11 @@ class AIInsightsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Recommended Actions',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildActionItem('Review flood prevention measures in high-risk areas'),
             _buildActionItem('Optimize irrigation schedules based on soil moisture analysis'),
             _buildActionItem('Prepare for increased crop yield by ensuring adequate storage'),
@@ -119,8 +119,8 @@ class AIInsightsScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.arrow_right, size: 20),
-          SizedBox(width: 8),
+          const Icon(Icons.arrow_right, size: 20),
+          const SizedBox(width: 8),
           Expanded(child: Text(action)),
         ],
       ),

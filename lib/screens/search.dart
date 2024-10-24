@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sarai/utils/bottomNavigation.dart';
 
 class SearchScreen extends StatefulWidget {
+  const SearchScreen({super.key});
+
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }
@@ -13,12 +15,12 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Search',
           style: TextStyle(color: Colors.white), // Set text color to white
         ),
         backgroundColor: Colors.blue, // Set background color to blue
-        iconTheme: IconThemeData(color: Colors.white), centerTitle: true, // Set icon color to white
+        iconTheme: const IconThemeData(color: Colors.white), centerTitle: true, // Set icon color to white
       ),
       body: Column(
         children: [
@@ -30,12 +32,12 @@ class _SearchScreenState extends State<SearchScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
             child: Wrap(
               spacing: 8.0,
               children: [
@@ -45,7 +47,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             ),
           ),
-          Expanded(
+          const Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [

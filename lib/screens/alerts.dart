@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sarai/utils/bottomNavigation.dart';
 
 class AlertsScreen extends StatefulWidget {
+  const AlertsScreen({super.key});
+
   @override
   _AlertsScreenState createState() => _AlertsScreenState();
 }
@@ -13,14 +15,14 @@ class _AlertsScreenState extends State<AlertsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
        appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Notifications',
           style: TextStyle(color: Colors.white), // Set text color to white
         ),
         backgroundColor: Colors.blue, // Set background color to blue
         automaticallyImplyLeading: false, centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Column(
           children: [
             ListTile(

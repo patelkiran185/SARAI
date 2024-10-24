@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:sarai/utils/bottomNavigation.dart';
 
 class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
        appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Settings',
           style: TextStyle(color: Colors.white), // Set text color to white
         ),
         backgroundColor: Colors.blue, // Set background color to blue
-        iconTheme: IconThemeData(color: Colors.white), centerTitle: true, // Set icon color to white
+        iconTheme: const IconThemeData(color: Colors.white), centerTitle: true, // Set icon color to white
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -19,7 +21,7 @@ class SettingsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildProfileSection(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildSettingsItem('Account', Icons.person, 'Manage your profile and preferences'),
             _buildSettingsItem('Notifications', Icons.notifications, 'Configure your alert settings'),
             _buildSettingsItem('Privacy & Security', Icons.security, 'Control your data and access'),
@@ -51,7 +53,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildProfileSection() {
-    return Card(
+    return const Card(
       child: ListTile(
         leading: CircleAvatar(
           backgroundImage: AssetImage('assets/profile.jpg'),
@@ -68,7 +70,7 @@ class SettingsScreen extends StatelessWidget {
         leading: Icon(icon, color: Colors.blue),
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
           // Handle settings item tap
         },
