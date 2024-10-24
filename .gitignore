@@ -45,7 +45,6 @@ app.*.map.json
 /build
 /ios
 /macos 
-/web
 /windows
 /venv
 /.env

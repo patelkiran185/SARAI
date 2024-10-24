@@ -4,6 +4,8 @@ import numpy as np
 from PIL import Image
 import io
 import onnxruntime
+from flask_cors import CORS
+
 
 # Load the ONNX model
 onnx_model_path = './vgg16.onnx'  # Update with your model path
@@ -31,6 +33,7 @@ def preprocess_image(image_bytes):
 
 # Create Flask app
 app = Flask(__name__)
+CORS(app) 
 
 @app.route('/')
 def home():

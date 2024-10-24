@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -53,7 +54,7 @@ class MyApp extends StatelessWidget {
       title: 'SARAI',
       initialRoute: '/',
       routes: {
-        '/': (context) => SplashScreen(
+      '/': (context) => kIsWeb ? LoginScreen() : SplashScreen(
             hasSeenOnboarding: hasSeenOnboarding, isLoggedIn: isLoggedIn),
         '/onboarding': (context) => OnboardingScreen(),
         '/login': (context) => LoginScreen(),
@@ -64,6 +65,12 @@ class MyApp extends StatelessWidget {
         '/search':(context) => SearchScreen(),
       },
     );
+  }
+   String _getInitialRoute() {
+    if (kIsWeb) {
+      return isLoggedIn ? '/home' : '/login';
+    }
+    return '/';
   }
 }
 

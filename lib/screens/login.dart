@@ -1,4 +1,4 @@
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sarai/services/auth_service.dart';
@@ -20,29 +20,37 @@ class _LoginScreenState extends State<LoginScreen>
   late Animation<double> _scaleAnimation;
   bool _isLoading = false;
   bool _isPasswordVisible = false;
-  final bool _isGooglePressed = false;
-  final bool _isGithubPressed = false;
+  bool _isGooglePressed = false;
+  bool _isGithubPressed = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _scaleAnimation =
-        Tween<double>(begin: 1.0, end: 0.95).animate(_animationController);
-  }
+ @override
+void initState() {
+  super.initState();
+  _animationController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  );
+  _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(_animationController);
+}
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+@override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  ModalRoute.of(context)?.addScopedWillPopCallback(_onWillPop);
+}
 
-  // normal email/ password
+@override
+void dispose() {
+  _animationController.dispose();
+  _emailController.dispose();
+  _passwordController.dispose();
+  ModalRoute.of(context)?.removeScopedWillPopCallback(_onWillPop);
+  super.dispose();
+}
+
+Future<bool> _onWillPop() async {
+  return false; // Prevent back navigation
+}
 
   Future<void> _signIn() async {
     setState(() {
@@ -63,11 +71,9 @@ class _LoginScreenState extends State<LoginScreen>
         password: password,
       );
 
-      // Check if the user exists in Firebase Authentication
       User? user = userCredential.user;
 
       if (user != null) {
-        // User exists, navigate to home screen
         Navigator.pushReplacementNamed(context, '/home');
       } else {
         _showDialog(
@@ -100,6 +106,56 @@ class _LoginScreenState extends State<LoginScreen>
           ],
         );
       },
+    );
+  }
+
+  Widget _buildWebTextField(
+    TextEditingController controller,
+    String hint,
+    IconData icon, {
+    bool isPassword = false,
+  }) {
+    return Container(
+      width: double.infinity,
+      height: 45,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword && !_isPasswordVisible,
+        style: const TextStyle(color: Colors.white), // Change text color to white
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)), // Make hint text white with opacity
+          prefixIcon: Icon(icon, color: Colors.white, size: 20), // Make icon white
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.white, // Make visibility icon white
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.1), // Semi-transparent white background
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.3)), // White border with opacity
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Colors.white), // Solid white border when focused
+          ),
+        ),
+      ),
     );
   }
 
@@ -161,132 +217,230 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildAnimatedIcon(
-      String assetPath, VoidCallback onPressed, bool isPressed) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => isPressed = true),
-      onTapUp: (_) => setState(() => isPressed = false),
-      onTapCancel: () => setState(() => isPressed = false),
-      child: AnimatedScale(
-        scale: isPressed ? 0.95 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        child: IconButton(
-          onPressed: onPressed,
-          icon: Image.asset(assetPath),
-          iconSize: 40,
+  Widget _buildMobileLayout() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/login.png',
+              height: 150,
+            ),
+            const SizedBox(height: 20),
+            _buildAnimatedTextField(_emailController, 'Email', Icons.email),
+            const SizedBox(height: 15),
+            _buildAnimatedTextField(_passwordController, 'Password', Icons.lock,
+                isPassword: true),
+            const SizedBox(height: 20),
+            _buildLoginButton(isMobile: true),
+            const SizedBox(height: 20),
+            _buildDivider(isMobile: true),
+            const SizedBox(height: 15),
+            _buildSocialLogin(),
+            const SizedBox(height: 20),
+            _buildRegisterLink(isMobile: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebLayout() {
+    return Center(
+      child: Container(
+        width: 600,  // Increased width
+        height: 700,
+        margin: const EdgeInsets.symmetric(vertical: 32),
+        decoration: BoxDecoration(
+          color: Colors.blueAccent.withOpacity(0.2),  // Match the blur color with lower opacity
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color.fromARGB(255, 225, 229, 236).withOpacity(0.6),  // Neon effect color
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blueAccent.withOpacity(0.6),
+              spreadRadius: 5,
+              blurRadius: 20,
+              offset: Offset(0, 0), // changes position of shadow
+            ),
+          ],
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/login.png',
+                  height: 120,
+                ),
+                const SizedBox(height: 32),
+                _buildWebTextField(_emailController, 'Email', Icons.email),
+                const SizedBox(height: 16),
+                _buildWebTextField(
+                  _passwordController,
+                  'Password',
+                  Icons.lock,
+                  isPassword: true,
+                ),
+                const SizedBox(height: 24),
+                _buildLoginButton(isMobile: false),
+                const SizedBox(height: 24),
+                _buildDivider(isMobile: false),
+                const SizedBox(height: 24),
+                _buildSocialLogin(),
+                const SizedBox(height: 24),
+                _buildRegisterLink(isMobile: false),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton({required bool isMobile}) {
+    return SizedBox(
+      width: double.infinity,
+      height: 45,
+      child: ElevatedButton(
+        onPressed: _signIn,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF4A90E2),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          elevation: 0,
+        ),
+        child: _isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Text(
+                'Login',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildDivider({required bool isMobile}) {
+    return Row(
+      children: [
+        Expanded(
+          child: Divider(
+            color: isMobile ? Colors.white : Colors.grey[300],
+            thickness: 1,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            "OR",
+            style: TextStyle(
+              color: isMobile ? Colors.white : Colors.grey[600],
+              fontSize: 14,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Divider(
+            color: isMobile ? Colors.white : Colors.grey[300],
+            thickness: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialLogin() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildSocialButton(
+          'assets/images/google_icon.png',
+          () async {
+            final authService = AuthService();
+            await authService.loginWithGoogle(context);
+          },
+        ),
+        const SizedBox(width: 16),
+        _buildSocialButton(
+          'assets/images/github_icon.png',
+          () async {
+            final authService = AuthService();
+            final result = await authService.loginWithGitHub(context);
+            if (result != null) {
+              Navigator.pushReplacementNamed(context, '/home');
+            } else {
+              _showDialog(context, 'Login Error',
+                  'Failed to authenticate with GitHub', false);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton(String assetPath, VoidCallback onPressed) {
+    return Container(
+      width: 45,
+      height: 45,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.transparent,
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Image.asset(assetPath),
+        iconSize: 24,
+      ),
+    );
+  }
+
+  Widget _buildRegisterLink({required bool isMobile}) {
+    return TextButton(
+      onPressed: () {
+        Navigator.pushNamed(context, '/register');
+      },
+      child: Text(
+        'Don\'t have an account? Register here',
+        style: TextStyle(
+           color: kIsWeb ? Colors.white : (isMobile ? Colors.white : Colors.grey[600]),
+          fontSize: 14,
         ),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        SystemNavigator.pop();
-        return false;
-      },
-      child: Scaffold(
-        backgroundColor: const Color(0xFF4A90E2),
-        body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/login.png',
-                      height: 150,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildAnimatedTextField(
-                        _emailController, 'Email', Icons.email),
-                    const SizedBox(height: 15),
-                    _buildAnimatedTextField(
-                        _passwordController, 'Password', Icons.lock,
-                        isPassword: true),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                      onTapDown: (_) => _animationController.forward(),
-                      onTapUp: (_) => _animationController.reverse(),
-                      onTapCancel: () => _animationController.reverse(),
-                      child: ScaleTransition(
-                        scale: _scaleAnimation,
-                        child: ElevatedButton(
-                          onPressed: _signIn,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 247, 244, 248),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 35, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const CircularProgressIndicator()
-                              : const Text('Login',
-                                  style: TextStyle(color: Colors.grey)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Row(
-                      children: [
-                        Expanded(
-                            child: Divider(color: Colors.white, thickness: 1)),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10.0),
-                          child:
-                              Text("OR", style: TextStyle(color: Colors.white)),
-                        ),
-                        Expanded(
-                            child: Divider(color: Colors.white, thickness: 1)),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildAnimatedIcon('assets/images/google_icon.png',
-                            () async {
-                          final authService = AuthService();
-                          await authService.loginWithGoogle(context);
-                        }, _isGooglePressed),
-                        const SizedBox(width: 20),
-                        _buildAnimatedIcon('assets/images/github_icon.png',
-                            () async {
-                          final authService = AuthService();
-                          final result =
-                              await authService.loginWithGitHub(context);
-                          if (result != null) {
-                            // User successfully authenticated with GitHub
-                            Navigator.pushReplacementNamed(context, '/home');
-                          } else {
-                            // Handle authentication failure
-                            _showDialog(context, 'Login Error',
-                                'Failed to authenticate with GitHub', false);
-                          }
-                        }, _isGithubPressed),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/register');
-                      },
-                      child: const Text(
-                        'Don\'t have an account? Register here.',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF4A90E2),
+      body: Center(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (kIsWeb || constraints.maxWidth > 800) {
+              return _buildWebLayout();
+            }
+            return _buildMobileLayout();
+          },
         ),
       ),
     );
