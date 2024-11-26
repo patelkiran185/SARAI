@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 import io
 import onnxruntime
+import os
 
 # Load the ONNX model
 # onnx_model_path = './vgg16.onnx'  # Update with your model path
