@@ -5,4 +5,4 @@ services:
     region: oregon
     plan: free
     buildCommand: "pip install -r sarai/backend/requirements.txt"
-    startCommand: "python sarai/backend/main.py"
+    startCommand: "python3 sarai/backend/main.py"
