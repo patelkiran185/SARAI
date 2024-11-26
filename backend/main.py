@@ -6,7 +6,8 @@ import io
 import onnxruntime
 
 # Load the ONNX model
-onnx_model_path = './vgg16.onnx'  # Update with your model path
+# onnx_model_path = './vgg16.onnx'  # Update with your model path
+onnx_model_path = os.path.join(os.path.dirname(__file__), 'vgg16.onnx')
 ort_session = onnxruntime.InferenceSession(onnx_model_path)
 
 # Define the class names
