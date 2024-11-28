@@ -195,7 +195,7 @@ void _clearClassification() {
       canPop: true,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('SAR GenAI Analyzer', style: TextStyle(color: Colors.white)),
+          title: const Text('SARAI ', style: TextStyle(color: Colors.white)),
           centerTitle: true,
           backgroundColor: Colors.blue,
           actions: [
@@ -220,19 +220,14 @@ void _clearClassification() {
                     mainAxisSpacing: 8,
                     childAspectRatio: 1,
                   ),
-                  itemCount: 5,
+                  itemCount: 2,
                   itemBuilder: (context, index) {
                     switch (index) {
                       case 0:
                         return _buildFeatureCard('SAR Image Colorization', Icons.color_lens);
                       case 1:
                         return _buildFeatureCard('Flood Area Detection', Icons.water_damage);
-                      case 2:
-                        return _buildFeatureCard('Crop Mapping', Icons.grass);
-                      case 3:
-                        return _buildFeatureCard('Historical Analysis', Icons.history);
-                      case 4:
-                        return _buildFeatureCard('AI Insights', Icons.lightbulb);
+                    
                       default:
                         return Container();
                     }
@@ -240,8 +235,7 @@ void _clearClassification() {
                 ),
                 const SizedBox(height: 20),
                 _buildClassifySection(),
-                const SizedBox(height: 20),
-                _buildRecentAnalyses(),
+                
               ],
             ),
           ),
@@ -331,7 +325,7 @@ MaterialPageRoute(builder: (context)=> const AIInsightsScreen()),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Classify SAR Image', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Classify Crop Image', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             if (_image != null)
               Container(
@@ -391,31 +385,5 @@ MaterialPageRoute(builder: (context)=> const AIInsightsScreen()),
     );
   }
 
-  Widget _buildRecentAnalyses() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text('Recent Analyses', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            _buildAnalysisItem('Analysis #1', '2 hours ago'),
-            _buildAnalysisItem('Analysis #2', '2 hours ago'),
-            _buildAnalysisItem('Analysis #3', '2 hours ago'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnalysisItem(String title, String time) {
-    return ListTile(
-      title: Text(title),
-      subtitle: Text(time),
-      onTap: () {
-        // Handle analysis item tap
-      },
-    );
-  }
+  
 }
