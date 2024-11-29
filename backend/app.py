@@ -9,14 +9,83 @@ import base64
 import os
 import numpy as np
 import cv2
-
+from flask import Flask, request, jsonify
+import onnxruntime
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from patchify import patchify
 
+
+onnx_model_path = os.path.join(os.path.dirname(__file__), 'vgg16.onnx')
+ort_session = onnxruntime.InferenceSession(onnx_model_path)
+
+class_names = {
+    0: "Jute",
+    1: "Maize",
+    2: "Rice",
+    3: "Sugarcane",
+    4: "Wheat",
+}
+
+def preprocess_image(image_bytes):
+    
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    
+    image = image.resize((224, 224))
+    image = np.array(image).astype(np.float32) / 255.0  
+    image = (image - [0.485, 0.456, 0.406]) / [0.229, 0.224, 0.225]  
+    image = np.transpose(image, (2, 0, 1))  
+    return image.astype(np.float32) 
+
+
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+
+@app.route('/')
+def home():
+    return "Welcome to the Flask App!"
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
+@app.route('/classify', methods=['GET', 'POST'])
+def classify_image():
+    if request.method == 'POST':
+        data = request.json  
+        image_base64 = data.get('image')  
+        
+        if not image_base64:
+            return jsonify({"error": "No image provided"}), 400
+        
+      
+        print("Image received")
+        image_bytes = base64.b64decode(image_base64)
+        
+    
+        input_tensor = preprocess_image(image_bytes)
+        input_tensor = np.expand_dims(input_tensor, axis=0) 
+        print("Image preprocessed")
+        
+      
+        ort_inputs = {ort_session.get_inputs()[0].name: input_tensor}
+        ort_outs = ort_session.run(None, ort_inputs)
+        print("Inference completed")
+        
+      
+        predictions = ort_outs[0] 
+        predicted_class_index = np.argmax(predictions, axis=1) 
+        predicted_class_name = class_names[int(predicted_class_index[0])] 
+        print("Prediction:", predicted_class_name)
+
+        return jsonify({
+            "predicted_class_index": int(predicted_class_index[0]),
+            "predicted_class_name": predicted_class_name
+        })
+    else:
+        return "This endpoint is for POST requests to classify images."    
+    
 def tversky_loss(y_true, y_pred, alpha=0.7, beta=0.3):
     smooth = 1e-6
     y_true_flat = tf.keras.backend.flatten(y_true)
@@ -76,21 +145,17 @@ cf = {
 }
 
 def preprocess_image_for_flood_detection(image):
-    """Preprocess image for flood detection model."""
-    # Convert PIL Image to numpy array
+    
     image = np.array(image)
-    
-    # Resize image
+ 
     image = cv2.resize(image, (cf["image_size"], cf["image_size"]))
-    
-    # Normalize pixel values
+   
     image = image / 255.0
 
-    # Convert to patches
     patch_shape = (cf["patch_size"], cf["patch_size"], cf["num_channels"])
     patches = patchify(image, patch_shape, cf["patch_size"])
     patches = np.reshape(patches, cf["flat_patches_shape"])
-    patches = np.expand_dims(patches, axis=0)  # Add batch dimension
+    patches = np.expand_dims(patches, axis=0) 
     
     return patches
 
@@ -99,7 +164,7 @@ def detect_flood():
     print("Received a request for flood detection")
     
     try:
-        # Check for image in request
+        
         if 'image' in request.files:
             file = request.files['image']
             original_image = Image.open(file).convert('RGB')
@@ -107,50 +172,43 @@ def detect_flood():
         else:
             return jsonify({'error': 'No image file provided'}), 400
         
-        # Resize input image to match model's expected input size
+        
         image = original_image.resize((cf["image_size"], cf["image_size"]))
         
-        # Load ground truth image
-        ground_truth_path = 'groundimage1.png'  # Adjust the filename as needed
+        
+        ground_truth_path = 'gim.jpeg' 
         if os.path.exists(ground_truth_path):
             ground_truth_original = Image.open(ground_truth_path).convert('RGB')
-            # Resize ground truth to match input image size
+            
             ground_truth_original = ground_truth_original.resize((cf["image_size"], cf["image_size"]))
             print("Ground truth image loaded")
         else:
             print(f"Ground truth image not found at {ground_truth_path}")
-            # Create a blank ground truth image if file doesn't exist
+            
             ground_truth_original = Image.new('RGB', (cf["image_size"], cf["image_size"]))
         
-        # Preprocess image
         processed_image = preprocess_image_for_flood_detection(image)
         print("Image preprocessed for flood detection")
-        
-        # Predict
+     
         prediction = flood_model.predict(processed_image)
         print("Prediction made by the model")
-        prediction = np.squeeze(prediction)  # Remove batch dimension
-        prediction = (prediction > 0.5).astype(np.uint8)  # Thresholding
-        
-        # Convert prediction to images
-        # Predicted Mask
+        prediction = np.squeeze(prediction)  
+        prediction = (prediction > 0.5).astype(np.uint8) 
+
         predicted_mask_image = (prediction * 255).astype(np.uint8)
-        predicted_mask_pil = Image.fromarray(predicted_mask_image, mode='L')  # 'L' mode for grayscale
-        
-        # Ground Truth 
+        predicted_mask_pil = Image.fromarray(predicted_mask_image, mode='L')  
+     
         ground_truth_array = np.array(ground_truth_original)
         ground_truth_gray = cv2.cvtColor(ground_truth_array, cv2.COLOR_RGB2GRAY)
         _, ground_truth_binary = cv2.threshold(ground_truth_gray, 127, 255, cv2.THRESH_BINARY)
         ground_truth_pil = Image.fromarray(ground_truth_binary, mode='L')
         
-        # Result Image (overlay prediction on original image)
         result_image = np.array(original_image).copy()
         result_image = cv2.resize(result_image, (cf["image_size"], cf["image_size"]))
-        mask_overlay = np.stack([predicted_mask_image] * 3, axis=-1)  # Ensure mask has 3 channels
-        result_image[mask_overlay[:, :, 0] > 0] = [255, 0, 0]  # Red overlay for flood areas
+        mask_overlay = np.stack([predicted_mask_image] * 3, axis=-1) 
+        result_image[mask_overlay[:, :, 0] > 0] = [255, 0, 0]
         result_image_pil = Image.fromarray(result_image)
-        
-        # Save images to byte buffers
+    
         ground_truth_buf = io.BytesIO()
         ground_truth_pil.save(ground_truth_buf, format='PNG')
         ground_truth_buf.seek(0)
@@ -162,13 +220,11 @@ def detect_flood():
         result_image_buf = io.BytesIO()
         result_image_pil.save(result_image_buf, format='PNG')
         result_image_buf.seek(0)
-        
-        # Encode images to base64
+    
         ground_truth_base64 = base64.b64encode(ground_truth_buf.getvalue()).decode('utf-8')
         predicted_mask_base64 = base64.b64encode(predicted_mask_buf.getvalue()).decode('utf-8')
         result_image_base64 = base64.b64encode(result_image_buf.getvalue()).decode('utf-8')
-        
-        # Return JSON with base64 encoded images
+       
         return jsonify({
             'ground_truth': ground_truth_base64,
             'predicted_mask': predicted_mask_base64,
