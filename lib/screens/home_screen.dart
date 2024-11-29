@@ -349,10 +349,11 @@ MaterialPageRoute(builder: (context)=> const AIInsightsScreen()),
           const SizedBox(height: 16),
           if (_image == null)
             Container(
-              height: 200,
+              height: 300,
+              width: 200,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/13.jpeg'), 
+                  image: AssetImage('assets/images/14.jpeg'), 
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
