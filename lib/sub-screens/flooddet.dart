@@ -34,49 +34,49 @@ class _FloodAreaDetectionScreenState extends State<FloodAreaDetectionScreen> {
   }
 
   Future<void> _detectFlood() async {
-    if (_selectedImageBytes == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please upload an image first.")),
-      );
-      return;
-    }
-
-    try {
-      setState(() {
-        _isLoading = true;
-      });
-
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse("${dotenv.env['BACKEND_URL']}/detect"),
-      );
-      request.files.add(http.MultipartFile.fromBytes(
-        'image',
-        _selectedImageBytes!,
-        filename: 'image.jpg',
-      ));
-      final response = await http.Response.fromStream(await request.send());
-
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        setState(() {
-          _groundTruthBytes = base64Decode(jsonResponse['ground_truth']);
-          _predictedMaskBytes = base64Decode(jsonResponse['predicted_mask']);
-          _resultImageBytes = base64Decode(jsonResponse['result_image']);
-        });
-      } else {
-        throw Exception("Error from server: ${response.body}");
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+  if (_selectedImageBytes == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please upload an image first.")),
+    );
+    return;
   }
+
+  try {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse("${dotenv.env['BACKEND_URL']}/detect"),
+    );
+    request.files.add(http.MultipartFile.fromBytes(
+      'image',
+      _selectedImageBytes!,
+      filename: 'image.jpg',
+    ));
+    final response = await http.Response.fromStream(await request.send());
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      setState(() {
+        _groundTruthBytes = base64Decode(jsonResponse['ground_truth']);
+        _predictedMaskBytes = base64Decode(jsonResponse['predicted_mask']);
+        _resultImageBytes = base64Decode(jsonResponse['result_image']);
+      });
+    } else {
+      throw Exception("Error from server: ${response.body}");
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e")),
+    );
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
 
   void _clearImage() {
     setState(() {
