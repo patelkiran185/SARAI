@@ -21,4 +21,4 @@ RUN pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
 EXPOSE 5000
 
 # Run main.py when the container launches
-CMD ["python", "main.py"]
+CMD ["python", "app.py"]

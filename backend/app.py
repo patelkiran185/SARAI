@@ -1,67 +1,240 @@
-from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
-from keras.models import load_model
-from keras.preprocessing import image
-import numpy as np
-from io import BytesIO
+from flask import Flask, Response, request, jsonify
 from PIL import Image
-import cv2
-from patchify import patchify
-import base64
-from zipfile import ZipFile
+import torch
+import torch.nn as nn
+from torchvision import transforms, models
 import io
+from flask_cors import CORS
+import base64
+import os
+import numpy as np
+import cv2
+from flask import Flask, request, jsonify
+import onnxruntime
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+from patchify import patchify
+
+
+onnx_model_path = os.path.join(os.path.dirname(__file__), 'vgg16.onnx')
+ort_session = onnxruntime.InferenceSession(onnx_model_path)
+
+class_names = {
+    0: "Jute",
+    1: "Maize",
+    2: "Rice",
+    3: "Sugarcane",
+    4: "Wheat",
+}
+
+def preprocess_image(image_bytes):
+    
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    
+    image = image.resize((224, 224))
+    image = np.array(image).astype(np.float32) / 255.0  
+    image = (image - [0.485, 0.456, 0.406]) / [0.229, 0.224, 0.225]  
+    image = np.transpose(image, (2, 0, 1))  
+    return image.astype(np.float32) 
+
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-model = load_model('model.keras', custom_objects={"dice_loss": lambda x, y: x, "dice_coef": lambda x, y: x})
+
+@app.route('/')
+def home():
+    return "Welcome to the Flask App!"
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
+@app.route('/classify', methods=['GET', 'POST'])
+def classify_image():
+    if request.method == 'POST':
+        data = request.json  
+        image_base64 = data.get('image')  
+        
+        if not image_base64:
+            return jsonify({"error": "No image provided"}), 400
+        
+      
+        print("Image received")
+        image_bytes = base64.b64decode(image_base64)
+        
+    
+        input_tensor = preprocess_image(image_bytes)
+        input_tensor = np.expand_dims(input_tensor, axis=0) 
+        print("Image preprocessed")
+        
+      
+        ort_inputs = {ort_session.get_inputs()[0].name: input_tensor}
+        ort_outs = ort_session.run(None, ort_inputs)
+        print("Inference completed")
+        
+      
+        predictions = ort_outs[0] 
+        predicted_class_index = np.argmax(predictions, axis=1) 
+        predicted_class_name = class_names[int(predicted_class_index[0])] 
+        print("Prediction:", predicted_class_name)
+
+        return jsonify({
+            "predicted_class_index": int(predicted_class_index[0]),
+            "predicted_class_name": predicted_class_name
+        })
+    else:
+        return "This endpoint is for POST requests to classify images."    
+    
+def tversky_loss(y_true, y_pred, alpha=0.7, beta=0.3):
+    smooth = 1e-6
+    y_true_flat = tf.keras.backend.flatten(y_true)
+    y_pred_flat = tf.keras.backend.flatten(y_pred)
+    true_pos = tf.reduce_sum(y_true_flat * y_pred_flat)
+    false_neg = tf.reduce_sum(y_true_flat * (1 - y_pred_flat))
+    false_pos = tf.reduce_sum((1 - y_true_flat) * y_pred_flat)
+    tversky = (true_pos + smooth) / (true_pos + alpha * false_neg + beta * false_pos + smooth)
+    return 1 - tversky
+
+def dice_coef(y_true, y_pred):
+    smooth = 1e-15
+    y_true = tf.keras.layers.Flatten()(y_true)
+    y_pred = tf.keras.layers.Flatten()(y_pred)
+    intersection = tf.reduce_sum(y_true * y_pred)
+    return (2. * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
+
+def iou(y_true, y_pred):
+    smooth = 1e-15
+    intersection = tf.reduce_sum(y_true * y_pred)
+    sum_ = tf.reduce_sum(y_true + y_pred)
+    jac = (intersection + smooth) / (sum_ - intersection + smooth)
+    return jac
+
+def sensitivity(y_true, y_pred):
+    true_positives = tf.reduce_sum(tf.round(y_true * y_pred))
+    possible_positives = tf.reduce_sum(tf.round(y_true))
+    return true_positives / (possible_positives + tf.keras.backend.epsilon())
+
+def precision(y_true, y_pred):
+    true_positives = tf.reduce_sum(tf.round(y_true * y_pred))
+    predicted_positives = tf.reduce_sum(tf.round(y_pred))
+    return true_positives / (predicted_positives + tf.keras.backend.epsilon())
+
+def specificity(y_true, y_pred):
+    true_negatives = tf.reduce_sum(tf.round((1 - y_true) * (1 - y_pred)))
+    possible_negatives = tf.reduce_sum(tf.round(1 - y_true))
+    return true_negatives / (possible_negatives + tf.keras.backend.epsilon())
+
+flood_model = load_model("modell.keras", custom_objects={
+    'tversky_loss': tversky_loss,
+    'dice_coef': dice_coef,
+    'iou': iou,
+    'sensitivity': sensitivity,
+    'precision': precision,
+    'specificity': specificity
+})
 
 cf = {
     "image_size": 256,
-    "num_channels": 3,
     "patch_size": 16,
-    "flat_patches_shape": (256, 48) 
+    "num_channels": 3,
+    "flat_patches_shape": (
+        (256**2) // (16**2),
+        16 * 16 * 3,
+    )
 }
 
+def preprocess_image_for_flood_detection(image):
+    
+    image = np.array(image)
+ 
+    image = cv2.resize(image, (cf["image_size"], cf["image_size"]))
+   
+    image = image / 255.0
+
+    patch_shape = (cf["patch_size"], cf["patch_size"], cf["num_channels"])
+    patches = patchify(image, patch_shape, cf["patch_size"])
+    patches = np.reshape(patches, cf["flat_patches_shape"])
+    patches = np.expand_dims(patches, axis=0) 
+    
+    return patches
 
 @app.route('/detect', methods=['POST'])
-def flood_prediction():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image provided'}), 400
+def detect_flood():
+    print("Received a request for flood detection")
+    
+    try:
+        
+        if 'image' in request.files:
+            file = request.files['image']
+            original_image = Image.open(file).convert('RGB')
+            print("Image received from file")
+        else:
+            return jsonify({'error': 'No image file provided'}), 400
+        
+        
+        image = original_image.resize((cf["image_size"], cf["image_size"]))
+        
+        
+        ground_truth_path = 'gim.jpeg' 
+        if os.path.exists(ground_truth_path):
+            ground_truth_original = Image.open(ground_truth_path).convert('RGB')
+            
+            ground_truth_original = ground_truth_original.resize((cf["image_size"], cf["image_size"]))
+            print("Ground truth image loaded")
+        else:
+            print(f"Ground truth image not found at {ground_truth_path}")
+            
+            ground_truth_original = Image.new('RGB', (cf["image_size"], cf["image_size"]))
+        
+        processed_image = preprocess_image_for_flood_detection(image)
+        print("Image preprocessed for flood detection")
+     
+        prediction = flood_model.predict(processed_image)
+        print("Prediction made by the model")
+        prediction = np.squeeze(prediction)  
+        prediction = (prediction > 0.5).astype(np.uint8) 
 
-    img_file = request.files['image']
-    img = Image.open(BytesIO(img_file.read()))
-    img = img.convert("RGB") 
-
- 
-    img = img.resize((cf["image_size"], cf["image_size"]))
-    img_array = np.array(img) / 255.0
-
-   
-    patch_shape = (cf["patch_size"], cf["patch_size"], cf["num_channels"])
-    patches = patchify(img_array, patch_shape, cf["patch_size"])
-    patches = np.reshape(patches, (-1, patch_shape[0] * patch_shape[1] * cf["num_channels"]))
-    patches = patches.astype(np.float32)
-    patches = np.expand_dims(patches, axis=0)
-    pred = model.predict(patches, verbose=0)[0]
-    pred = np.reshape(pred, (cf["image_size"], cf["image_size"], 1))
-    pred = (pred > 0.5).astype(np.uint8)
-
-    pred_edges = cv2.Canny(pred[:, :, 0] * 255, 100, 200)
-    kernel = np.ones((3, 3), np.uint8)  
-    thicker_edges = cv2.dilate(pred_edges, kernel, iterations=1)
-
-    outline_mask = np.zeros((cf["image_size"], cf["image_size"], 3), dtype=np.uint8)
-    outline_mask[:, :, 000] = thicker_edges  
-    img_array = (img_array * 255).astype(np.uint8) 
-    combined_image = cv2.addWeighted(img_array, 0.9, outline_mask, 0.3, 0)
- 
-    output = BytesIO()
-    combined_pil_image = Image.fromarray(combined_image)
-    combined_pil_image.save(output, format="PNG")
-    output.seek(0)
-
-    return Response(output.getvalue(), mimetype='image/png')
+        predicted_mask_image = (prediction * 255).astype(np.uint8)
+        predicted_mask_pil = Image.fromarray(predicted_mask_image, mode='L')  
+     
+        ground_truth_array = np.array(ground_truth_original)
+        ground_truth_gray = cv2.cvtColor(ground_truth_array, cv2.COLOR_RGB2GRAY)
+        _, ground_truth_binary = cv2.threshold(ground_truth_gray, 127, 255, cv2.THRESH_BINARY)
+        ground_truth_pil = Image.fromarray(ground_truth_binary, mode='L')
+        
+        result_image = np.array(original_image).copy()
+        result_image = cv2.resize(result_image, (cf["image_size"], cf["image_size"]))
+        mask_overlay = np.stack([predicted_mask_image] * 3, axis=-1) 
+        result_image[mask_overlay[:, :, 0] > 0] = [255, 0, 0]
+        result_image_pil = Image.fromarray(result_image)
+    
+        ground_truth_buf = io.BytesIO()
+        ground_truth_pil.save(ground_truth_buf, format='PNG')
+        ground_truth_buf.seek(0)
+        
+        predicted_mask_buf = io.BytesIO()
+        predicted_mask_pil.save(predicted_mask_buf, format='PNG')
+        predicted_mask_buf.seek(0)
+        
+        result_image_buf = io.BytesIO()
+        result_image_pil.save(result_image_buf, format='PNG')
+        result_image_buf.seek(0)
+    
+        ground_truth_base64 = base64.b64encode(ground_truth_buf.getvalue()).decode('utf-8')
+        predicted_mask_base64 = base64.b64encode(predicted_mask_buf.getvalue()).decode('utf-8')
+        result_image_base64 = base64.b64encode(result_image_buf.getvalue()).decode('utf-8')
+       
+        return jsonify({
+            'ground_truth': ground_truth_base64,
+            'predicted_mask': predicted_mask_base64,
+            'result_image': result_image_base64,
+            'flood_detected': bool(np.max(prediction) > 0)
+        })
+    
+    except Exception as e:
+        print(f"Error during flood detection: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)

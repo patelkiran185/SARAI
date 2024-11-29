@@ -48,4 +48,4 @@ app.*.map.json
 /web
 /windows
 /venv
-/.env
+.env
