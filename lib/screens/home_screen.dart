@@ -23,7 +23,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // final FirebaseAuth _auth = FirebaseAuth.instance;
   File? _image;
   bool _isClassifying = false;
    String? _classificationResult;
@@ -205,37 +205,57 @@ void _clearClassification() {
             ),
           ],
         ),
-        body: SingleChildScrollView(
+        // body: SingleChildScrollView(
+        //   child: Padding(
+        //     padding: const EdgeInsets.all(16.0),
+        //     child: Column(
+        //       crossAxisAlignment: CrossAxisAlignment.stretch,
+        //       children: [
+        //         GridView.builder(
+        //           shrinkWrap: true,
+        //           physics: const NeverScrollableScrollPhysics(),
+        //           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        //             crossAxisCount: 2,
+        //             crossAxisSpacing: 8,
+        //             mainAxisSpacing: 8,
+        //             childAspectRatio: 1,
+        //           ),
+        //           itemCount: 2,
+        //           itemBuilder: (context, index) {
+        //             switch (index) {
+        //               // case 0:
+        //               //   return _buildFeatureCard('SAR Image Colorization', Icons.color_lens);
+        //               case 0:
+        //                 return _buildFeatureCard('Flood Area Detection', Icons.water_damage);
+                    
+        //               default:
+        //                 return Container();
+        //             }
+        //           },
+        //         ),
+        //         const SizedBox(height: 20),
+        //         _buildClassifySection(),
+                
+        //       ],
+        //     ),
+        //   ),
+        // ),
+          body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 1,
-                  ),
-                  itemCount: 2,
-                  itemBuilder: (context, index) {
-                    switch (index) {
-                      case 0:
-                        return _buildFeatureCard('SAR Image Colorization', Icons.color_lens);
-                      case 1:
-                        return _buildFeatureCard('Flood Area Detection', Icons.water_damage);
-                    
-                      default:
-                        return Container();
-                    }
+                FloodAreaDetectionCard(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const FloodAreaDetectionScreen()),
+                    );
                   },
                 ),
                 const SizedBox(height: 20),
                 _buildClassifySection(),
-                
               ],
             ),
           ),
@@ -318,72 +338,124 @@ MaterialPageRoute(builder: (context)=> const AIInsightsScreen()),
     );
   }
 
-   Widget _buildClassifySection() {
+  Widget _buildClassifySection() {
+  return Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Classify Crop Image', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          if (_image == null)
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/13.jpeg'), 
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          if (_image != null)
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: FileImage(_image!),
+                  fit: BoxFit.cover,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.upload),
+            label: Text(_isClassifying ? 'Classifying...' : 'Tap to classify image'),
+            onPressed: _isClassifying ? null : _pickImage,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+          ),
+          if (_classificationResult != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Classification Result:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(_classificationResult!),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _clearClassification,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text('Clear'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
+  
+}
+class FloodAreaDetectionCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const FloodAreaDetectionCard({required this.onTap, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Classify Crop Image', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Flood Area Detection', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            if (_image != null)
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: FileImage(_image!),
-                    fit: BoxFit.cover,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/12.jpeg'), 
+                  fit: BoxFit.cover,
                 ),
+                borderRadius: BorderRadius.circular(8),
               ),
+            ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              icon: const Icon(Icons.upload),
-              label: Text(_isClassifying ? 'Classifying...' : 'Tap to classify image'),
-              onPressed: _isClassifying ? null : _pickImage,
+              icon: const Icon(Icons.water_damage),
+              label: const Text('Detect Flood Area'),
+              onPressed: onTap,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
-            if (_classificationResult != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Classification Result:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(_classificationResult!),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _clearClassification,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: Text('Clear'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ],
         ),
       ),
     );
   }
-
-  
 }
