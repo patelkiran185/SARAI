@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:gallery_saver/gallery_saver.dart';
 
 import '../utils/bottomNavigation.dart';
 
@@ -15,6 +16,7 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
   File? _selectedImage;
   String? _colorizedImageUrl;
   bool _isLoading = false;
+  int _currentIndex = 0;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -71,11 +73,26 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
     }
   }
 
+  // Function to download the colorized image
+  Future<void> _downloadImage() async {
+    if (_colorizedImageUrl != null) {
+      final bytes = base64Decode(_colorizedImageUrl!.split(',')[1]);
+      final tempDir = await Directory.systemTemp.createTemp();
+      final file = await File('${tempDir.path}/colorized_image.png').writeAsBytes(bytes);
+
+      final result = await GallerySaver.saveImage(file.path);
+      if (result != null && result) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Image saved to gallery')),
+        );
+      }
+    }
+  }
+
   Widget _imageContainer({required Widget child}) {
     return Container(
       height: 150, // Consistent size for both images
       decoration: BoxDecoration(
-      
         borderRadius: BorderRadius.circular(8),
       ),
       child: ClipRRect(
@@ -85,6 +102,26 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
     );
   }
 
+  void _onItemSelected(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/search');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/aiins');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/settings');
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     int _currentIndex = 0;
@@ -92,12 +129,11 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
       appBar: AppBar(
         title: const Text(
           'Colorisation of SAR imagery',
-          style: TextStyle(color: Colors.white), 
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.blue, 
-        iconTheme: const IconThemeData(color: Colors.white), centerTitle: true, 
-        
-  
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -109,7 +145,6 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
               _imageContainer(
                 child: Image.file(
                   _selectedImage!,
-                 
                 ),
               )
             else
@@ -159,32 +194,24 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
                       fit: BoxFit.cover,
                     ),
                   ),
+                  SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Colors.blue,
+                    ),
+                    onPressed: _downloadImage,
+                    icon: Icon(Icons.download),
+                    label: Text('Download Image'),
+                  ),
                 ],
               ),
           ],
         ),
       ),
-       bottomNavigationBar: BottomNavigation(
-          currentIndex: _currentIndex,
-          onItemSelected: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-            switch (index) {
-              case 0:
-                break;
-              case 1:
-                Navigator.pushReplacementNamed(context, '/search');
-                break;
-              case 2:
-                Navigator.pushReplacementNamed(context, '/alerts');
-                break;
-              case 3:
-                Navigator.pushReplacementNamed(context, '/settings');
-                break;
-            }
-          },
-        ),
+      bottomNavigationBar: BottomNavigation(
+        currentIndex: _currentIndex,
+        onItemSelected: _onItemSelected,
+      ),
     );
   }
 }

@@ -15,6 +15,7 @@ class FloodAreaDetectionScreen extends StatefulWidget {
 }
 
 class _FloodAreaDetectionScreenState extends State<FloodAreaDetectionScreen> {
+    int _currentIndex = 0;
   Uint8List? _selectedImageBytes;
   Uint8List? _groundTruthBytes;
   Uint8List? _predictedMaskBytes;
@@ -174,7 +175,25 @@ class _FloodAreaDetectionScreenState extends State<FloodAreaDetectionScreen> {
     },
   );
 }
-
+ void _onItemSelected(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/search');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/aiins');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/settings');
+        break;
+    }
+  }
 
  @override
 Widget build(BuildContext context) {
@@ -264,27 +283,10 @@ Widget build(BuildContext context) {
           ),
       ],
     ),
-    bottomNavigationBar: BottomNavigation(
-          currentIndex: _currentIndex,
-          onItemSelected: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-            switch (index) {
-              case 0:
-                break;
-              case 1:
-                Navigator.pushReplacementNamed(context, '/search');
-                break;
-              case 2:
-                Navigator.pushReplacementNamed(context, '/alerts');
-                break;
-              case 3:
-                Navigator.pushReplacementNamed(context, '/settings');
-                break;
-            }
-          },
-        ),
+       bottomNavigationBar: BottomNavigation(
+        currentIndex: _currentIndex,
+        onItemSelected: _onItemSelected,
+      ),
   );
 }
 }

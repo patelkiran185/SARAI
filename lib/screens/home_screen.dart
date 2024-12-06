@@ -534,6 +534,14 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkUserProvider();
   }
 
+
+ void _onItemSelected(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  
   Future<void> _checkUserProvider() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -719,17 +727,26 @@ class _HomeScreenState extends State<HomeScreen> {
       canPop: true,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(' SARVISION', style: TextStyle(color: Colors.white)),
-          centerTitle: true,
-          automaticallyImplyLeading: false,
-          backgroundColor: Colors.blue,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout, color: Colors.white),
-              onPressed: () => _showLogoutDialog(context),
-            ),
-          ],
+        leading: IconButton(
+          icon: const Icon(Icons.chat, color: Colors.white),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AIInsightsScreen()),
+            );
+          },
         ),
+        title: const Text('SARVISION', style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.blue,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () => _showLogoutDialog(context),
+          ),
+        ],
+      ),
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
