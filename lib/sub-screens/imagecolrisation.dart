@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:gallery_saver/gallery_saver.dart';
@@ -44,7 +45,7 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
       _isLoading = true;
     });
 
-    final uri = Uri.parse('http://192.168.70.197:5000/colorize'); // Update with your API URL
+    final uri = Uri.parse('${dotenv.env['BACKEND_URL']}/colorize'); 
     final request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath('image', _selectedImage!.path));
 
