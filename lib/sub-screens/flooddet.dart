@@ -5,6 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import '../utils/bottomNavigation.dart';
+
 class FloodAreaDetectionScreen extends StatefulWidget {
   const FloodAreaDetectionScreen({super.key});
   @override
@@ -87,53 +89,96 @@ class _FloodAreaDetectionScreenState extends State<FloodAreaDetectionScreen> {
     });
   }
 
-  Widget _buildImageGrid() {
-    final List<Map<String, dynamic>> images = [
-      if (_selectedImageBytes != null)
-        {'title': 'Uploaded Image', 'bytes': _selectedImageBytes},
-      if (_groundTruthBytes != null)
-        {'title': 'Ground Truth Image', 'bytes': _groundTruthBytes},
-      if (_predictedMaskBytes != null)
-        {'title': 'Predicted Mask', 'bytes': _predictedMaskBytes},
-      if (_resultImageBytes != null)
-        {'title': 'Flood Detected Image', 'bytes': _resultImageBytes},
-    ];
+  // Widget _buildImageGrid() {
+  //   final List<Map<String, dynamic>> images = [
+  //     if (_selectedImageBytes != null)
+  //       {'title': 'Uploaded Image', 'bytes': _selectedImageBytes},
+  //     if (_groundTruthBytes != null)
+  //       {'title': 'Ground Truth Image', 'bytes': _groundTruthBytes},
+  //     if (_predictedMaskBytes != null)
+  //       {'title': 'Predicted Mask', 'bytes': _predictedMaskBytes},
+  //     if (_resultImageBytes != null)
+  //       {'title': 'Flood Detected Image', 'bytes': _resultImageBytes},
+  //   ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 1,
-      ),
-      itemCount: images.length,
-      itemBuilder: (context, index) {
-        final image = images[index];
-        return Column(
-          children: [
-            Text(
-              image['title'],
-              style: const TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
+  //   return GridView.builder(
+  //     shrinkWrap: true,
+  //     physics: const NeverScrollableScrollPhysics(),
+  //     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+  //       crossAxisCount: 2,
+  //       crossAxisSpacing: 10,
+  //       mainAxisSpacing: 10,
+  //       childAspectRatio: 1,
+  //     ),
+  //     itemCount: images.length,
+  //     itemBuilder: (context, index) {
+  //       final image = images[index];
+  //       return Column(
+  //         children: [
+  //           Text(
+  //             image['title'],
+  //             style: const TextStyle(
+  //                 fontSize: 14, fontWeight: FontWeight.bold),
+  //             textAlign: TextAlign.center,
+  //           ),
+  //           const SizedBox(height: 8),
+  //           Expanded(
+  //             child: Image.memory(
+  //               image['bytes'],
+  //               fit: BoxFit.cover,
+  //             ),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+  Widget _buildImageGrid() {
+  final List<Map<String, dynamic>> images = [
+    if (_selectedImageBytes != null)
+      {'title': 'Uploaded Image', 'bytes': _selectedImageBytes},
+    if (_predictedMaskBytes != null)
+      {'title': 'Predicted Mask', 'bytes': _predictedMaskBytes},
+    if (_resultImageBytes != null)
+      {'title': 'Flood Detected Image', 'bytes': _resultImageBytes},
+  ];
+
+  return GridView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      childAspectRatio: 1,
+    ),
+    itemCount: images.length,
+    itemBuilder: (context, index) {
+      final image = images[index];
+      return Column(
+        children: [
+          Text(
+            image['title'],
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Image.memory(
+              image['bytes'],
+              fit: BoxFit.cover,
             ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: Image.memory(
-                image['bytes'],
-                fit: BoxFit.cover,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
  @override
 Widget build(BuildContext context) {
+  int _currentIndex = 0;
   return Scaffold(
     appBar: AppBar(
        title: const Text(
@@ -219,6 +264,27 @@ Widget build(BuildContext context) {
           ),
       ],
     ),
+    bottomNavigationBar: BottomNavigation(
+          currentIndex: _currentIndex,
+          onItemSelected: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+            switch (index) {
+              case 0:
+                break;
+              case 1:
+                Navigator.pushReplacementNamed(context, '/search');
+                break;
+              case 2:
+                Navigator.pushReplacementNamed(context, '/alerts');
+                break;
+              case 3:
+                Navigator.pushReplacementNamed(context, '/settings');
+                break;
+            }
+          },
+        ),
   );
 }
 }

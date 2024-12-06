@@ -1,94 +1,190 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:gallery_saver/gallery_saver.dart';
+import 'package:http/http.dart' as http;
+
+import '../utils/bottomNavigation.dart';
 
 class SARColorizationScreen extends StatefulWidget {
-  const SARColorizationScreen({super.key});
-
   @override
   _SARColorizationScreenState createState() => _SARColorizationScreenState();
 }
 
 class _SARColorizationScreenState extends State<SARColorizationScreen> {
-  File? _image;
-  File? _colorizedImage;
+  File? _selectedImage;
+  String? _colorizedImageUrl;
   bool _isLoading = false;
 
-  Future<void> _uploadImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  final ImagePicker _picker = ImagePicker();
 
+  // Function to pick an image from the gallery
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
-        _colorizedImage = null;
-        _isLoading = true;
+        _selectedImage = File(pickedFile.path);
+        _colorizedImageUrl = null; // Clear any previous output
       });
+    }
+  }
 
-      // Simulating colorization process
-      await Future.delayed(const Duration(seconds: 3));
-      
-      // In a real app, you would send the image to your GenAI model here
-      // and receive the colorized image back
+  // Function to upload the image and get the colorized image
+  Future<void> _colorizeImage() async {
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select an image first!')),
+      );
+      return;
+    }
 
+    setState(() {
+      _isLoading = true;
+    });
+
+    final uri = Uri.parse('http://192.168.70.197:5000/colorize'); // Update with your API URL
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(await http.MultipartFile.fromPath('image', _selectedImage!.path));
+
+    try {
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.toBytes();
+        final base64Image = base64Encode(responseBody);
+
+        setState(() {
+          _colorizedImageUrl = "data:image/png;base64,$base64Image";
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to colorize image: ${response.reasonPhrase}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    } finally {
       setState(() {
-        _colorizedImage = _image; // For demonstration, we're just using the same image
         _isLoading = false;
       });
     }
   }
 
-  Future<void> _downloadImage() async {
-    if (_colorizedImage != null) {
-      final result = await GallerySaver.saveImage(_colorizedImage!.path);
-      if (result != null && result) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Image saved to gallery')),
-        );
-      }
-    }
+  Widget _imageContainer({required Widget child}) {
+    return Container(
+      height: 150, // Consistent size for both images
+      decoration: BoxDecoration(
+      
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: child,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    int _currentIndex = 0;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SAR Image Colorization'),
+        title: const Text(
+          'Colorisation of SAR imagery',
+          style: TextStyle(color: Colors.white), 
+        ),
+        backgroundColor: Colors.blue, 
+        iconTheme: const IconThemeData(color: Colors.white), centerTitle: true, 
+        
+  
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ElevatedButton(
-                onPressed: _uploadImage,
-                child: const Text('Upload SAR Image'),
-              ),
-              const SizedBox(height: 16),
-              if (_image != null) ...[
-                const Text('Original Image:', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Image.file(_image!),
-                const SizedBox(height: 16),
-              ],
-              if (_isLoading)
-                const Center(child: CircularProgressIndicator())
-              else if (_colorizedImage != null) ...[
-                const Text('Colorized Image:', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Image.file(_colorizedImage!),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _downloadImage,
-                  child: const Text('Download Colorized Image'),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Display the selected image
+            if (_selectedImage != null)
+              _imageContainer(
+                child: Image.file(
+                  _selectedImage!,
+                 
                 ),
-              ],
-            ],
-          ),
+              )
+            else
+              _imageContainer(
+                child: Center(
+                  child: Text(
+                    'No image selected',
+                    style: TextStyle(color: Colors.grey[700]),
+                  ),
+                ),
+              ),
+            SizedBox(height: 16),
+            // Button to pick an image
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Colors.blue,
+              ),
+              onPressed: _pickImage,
+              icon: Icon(Icons.image),
+              label: Text('Select Image'),
+            ),
+            SizedBox(height: 16),
+            // Button to colorize the image
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Colors.blue,
+              ),
+              onPressed: _colorizeImage,
+              icon: Icon(Icons.colorize),
+              label: Text('Colorize'),
+            ),
+            SizedBox(height: 16),
+            // Display a loading spinner while processing
+            if (_isLoading) Center(child: CircularProgressIndicator()),
+            // Display the colorized image
+            if (_colorizedImageUrl != null)
+              Column(
+                children: [
+                  Text(
+                    'Colorized Image:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  _imageContainer(
+                    child: Image.memory(
+                      base64Decode(_colorizedImageUrl!.split(',')[1]),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ],
+              ),
+          ],
         ),
       ),
+       bottomNavigationBar: BottomNavigation(
+          currentIndex: _currentIndex,
+          onItemSelected: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+            switch (index) {
+              case 0:
+                break;
+              case 1:
+                Navigator.pushReplacementNamed(context, '/search');
+                break;
+              case 2:
+                Navigator.pushReplacementNamed(context, '/alerts');
+                break;
+              case 3:
+                Navigator.pushReplacementNamed(context, '/settings');
+                break;
+            }
+          },
+        ),
     );
   }
 }

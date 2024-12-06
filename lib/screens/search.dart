@@ -9,7 +9,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  int _currentIndex = 1; // Assuming Search is the 2nd tab
+  int _currentIndex = 1; 
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +17,12 @@ class _SearchScreenState extends State<SearchScreen> {
       appBar: AppBar(
         title: const Text(
           'Search',
-          style: TextStyle(color: Colors.white), // Set text color to white
+          style: TextStyle(color: Colors.white), 
         ),
-        backgroundColor: Colors.blue, // Set background color to blue
-        iconTheme: const IconThemeData(color: Colors.white), centerTitle: true, // Set icon color to white
+        backgroundColor: Colors.blue, 
+        iconTheme: const IconThemeData(color: Colors.white), centerTitle: true, 
+        
+  automaticallyImplyLeading: false, 
       ),
       body: Column(
         children: [

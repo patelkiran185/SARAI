@@ -8,13 +8,16 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
        appBar: AppBar(
-        title: const Text(
-          'Settings',
-          style: TextStyle(color: Colors.white), // Set text color to white
-        ),
-        backgroundColor: Colors.blue, // Set background color to blue
-        iconTheme: const IconThemeData(color: Colors.white), centerTitle: true, // Set icon color to white
-      ),
+  title: const Text(
+    'Settings',
+    style: TextStyle(color: Colors.white), 
+  ),
+  backgroundColor: Colors.blue, 
+  iconTheme: const IconThemeData(color: Colors.white), 
+  centerTitle: true, 
+  automaticallyImplyLeading: false, 
+),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -56,10 +59,10 @@ class SettingsScreen extends StatelessWidget {
     return const Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage: AssetImage('assets/profile.jpg'),
+          backgroundImage: AssetImage('assets/images/profile.jpeg'),
         ),
-        title: Text('John Doe'),
-        subtitle: Text('john.doe@example.com'),
+        title: Text('Sarai_dev'),
+        subtitle: Text('sarai.dev.org@example.com'),
       ),
     );
   }

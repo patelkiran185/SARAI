@@ -1,4 +1,5 @@
-from flask import Flask, Response, request, jsonify
+import sys
+from flask import Flask, Response, request, jsonify, send_file
 from PIL import Image
 import torch
 import torch.nn as nn
@@ -14,6 +15,7 @@ import onnxruntime
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from patchify import patchify
+import onnxruntime as ort
 
 
 onnx_model_path = os.path.join(os.path.dirname(__file__), 'vgg16.onnx')
@@ -235,6 +237,85 @@ def detect_flood():
     except Exception as e:
         print(f"Error during flood detection: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+
+
+# Load the SAR Colorization ONNX Model
+sar_model_path = "sar2rgb.onnx"
+sar_session = ort.InferenceSession(sar_model_path)
+
+def preprocess_sar_image(image_buffer):
+    try:
+        # Open the image and resize to 256x256
+        img = Image.open(io.BytesIO(image_buffer))
+        img = img.resize((256, 256))
+        img = img.convert("RGB")  # Ensure it's RGB
+
+        # Convert to NumPy array and normalize
+        img_array = np.array(img, dtype=np.float32) / 255.0
+        mean = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+        std = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+        img_normalized = (img_array - mean) / std
+
+        # Convert to CHW format and add batch dimension
+        img_chw = np.transpose(img_normalized, (2, 0, 1))
+        img_chw = np.expand_dims(img_chw, axis=0)
+
+        return img_chw
+    except Exception as e:
+        raise ValueError(f"Error in preprocessing image: {e}")
+
+def postprocess_sar_image(output_tensor):
+    try:
+        # Output tensor: [1, 3, H, W]
+        output_array = output_tensor[0]  # Remove batch dimension
+        output_array = np.clip((output_array * 0.5 + 0.5) * 255, 0, 255).astype(np.uint8)
+        output_array = np.transpose(output_array, (1, 2, 0))  # Convert CHW to HWC
+
+        # Convert to a PIL image
+        img = Image.fromarray(output_array, "RGB")
+
+        # Save the image to an in-memory buffer
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)  # Reset the buffer position to the beginning
+        return buffer
+    except Exception as e:
+        raise ValueError(f"Error in postprocessing image: {e}")
+
+@app.route("/colorize", methods=["POST"])
+def colorize():
+    if "image" not in request.files:
+        return {"error": "No image file provided"}, 400
+
+    file = request.files["image"]
+
+    if not file:
+        return {"error": "Empty file"}, 400
+
+    try:
+        # Read and preprocess the image
+        image_buffer = file.read()
+        image_tensor = preprocess_sar_image(image_buffer)
+
+        # Perform inference
+        feeds = {sar_session.get_inputs()[0].name: image_tensor}
+        outputs = sar_session.run(None, feeds)
+        output_tensor = outputs[0]
+
+        # Postprocess and return colorized image as PNG
+        colorized_image_buffer = postprocess_sar_image(output_tensor)
+        return send_file(
+            colorized_image_buffer,
+            mimetype="image/png",
+            as_attachment=True,
+            download_name="colorized_image.png"
+        )
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
