@@ -16,7 +16,7 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from patchify import patchify
 import onnxruntime as ort
-
+import timm
 
 onnx_model_path = os.path.join(os.path.dirname(__file__), 'vgg16.onnx')
 ort_session = onnxruntime.InferenceSession(onnx_model_path)
@@ -241,7 +241,7 @@ def detect_flood():
 
 
 # Load the SAR Colorization ONNX Model
-sar_model_path = "sar2rgb.onnx"
+sar_model_path = "sar2rgb222.onnx"
 sar_session = ort.InferenceSession(sar_model_path)
 
 def preprocess_sar_image(image_buffer):
@@ -283,6 +283,7 @@ def postprocess_sar_image(output_tensor):
     except Exception as e:
         raise ValueError(f"Error in postprocessing image: {e}")
 
+
 @app.route("/colorize", methods=["POST"])
 def colorize():
     if "image" not in request.files:
@@ -313,8 +314,6 @@ def colorize():
         )
     except Exception as e:
         return {"error": str(e)}, 500
-
-
 
 
 if __name__ == '__main__':
