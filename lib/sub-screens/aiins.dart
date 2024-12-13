@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../utils/bottomNavigation.dart';
 
 class AIInsightsScreen extends StatefulWidget {
-  const AIInsightsScreen({Key? key}) : super(key: key);
+  const AIInsightsScreen({super.key});
 
   @override
   _AIInsightsScreenState createState() => _AIInsightsScreenState();

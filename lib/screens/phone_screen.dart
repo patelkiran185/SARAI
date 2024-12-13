@@ -190,7 +190,7 @@ late TwilioFlutter _twilioFlutter;
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Send OTP',
                     style: TextStyle(
                       fontSize: 18,
@@ -227,7 +227,7 @@ late TwilioFlutter _twilioFlutter;
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Verify OTP',
                             style: TextStyle(
                               fontSize: 18,

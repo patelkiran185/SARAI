@@ -162,7 +162,7 @@ class _OtpScreenState extends State<OtpScreen> {
                             BorderRadius.circular(50), // Make the button round
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Verify OTP',
                       style: TextStyle(
                           fontSize: 18,

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../sub-screens/aiins.dart';
+import '../sub-screens/cropvit.dart';
 import '../sub-screens/flooddet.dart';
 import '../sub-screens/imagecolrisation.dart';
 import '../utils/bottomNavigation.dart';
@@ -273,6 +274,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 20),
                 // _buildClassifyVitSection(),
+                 CropClassificationVitCard(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CropUsingVitPage()),
+                    );
+                  },
+                ),
+                
                 const SizedBox(height: 20),
               
               ],
@@ -387,7 +397,7 @@ class _HomeScreenState extends State<HomeScreen> {
 class FloodAreaDetectionCard extends StatelessWidget {
   final VoidCallback onTap;
 
-  const FloodAreaDetectionCard({required this.onTap, Key? key}) : super(key: key);
+  const FloodAreaDetectionCard({required this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -430,7 +440,7 @@ class FloodAreaDetectionCard extends StatelessWidget {
 class SARImageColorizationCard extends StatelessWidget {
   final VoidCallback onTap;
 
-  const SARImageColorizationCard({required this.onTap, Key? key}) : super(key: key);
+  const SARImageColorizationCard({required this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -475,7 +485,7 @@ class SARImageColorizationCard extends StatelessWidget {
 class CropClassificationCard extends StatelessWidget {
   final VoidCallback onTap;
 
-  const CropClassificationCard({required this.onTap, Key? key}) : super(key: key);
+  const CropClassificationCard({required this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -486,6 +496,51 @@ class CropClassificationCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text('Crop Classification using VGG16', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/14.jpeg'),
+                  fit: BoxFit.cover,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.search),
+              label: const Text('Classify Crop Image'),
+              onPressed: onTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+class CropClassificationVitCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const CropClassificationVitCard({required this.onTap, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text('Crop Classification using ViT', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             Container(
               height: 200,

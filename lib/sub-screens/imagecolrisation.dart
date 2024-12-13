@@ -9,6 +9,8 @@ import 'package:gallery_saver/gallery_saver.dart';
 import '../utils/bottomNavigation.dart';
 
 class SARColorizationScreen extends StatefulWidget {
+  const SARColorizationScreen({super.key});
+
   @override
   _SARColorizationScreenState createState() => _SARColorizationScreenState();
 }
@@ -36,7 +38,7 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
   Future<void> _colorizeImage() async {
     if (_selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select an image first!')),
+        const SnackBar(content: Text('Please select an image first!')),
       );
       return;
     }
@@ -125,7 +127,7 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    int _currentIndex = 0;
+    int currentIndex = 0;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -157,52 +159,52 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
                   ),
                 ),
               ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Button to pick an image
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white, backgroundColor: Colors.blue,
               ),
               onPressed: _pickImage,
-              icon: Icon(Icons.image),
-              label: Text('Select Image'),
+              icon: const Icon(Icons.image),
+              label: const Text('Select Image'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Button to colorize the image
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white, backgroundColor: Colors.blue,
               ),
               onPressed: _colorizeImage,
-              icon: Icon(Icons.colorize),
-              label: Text('Colorize'),
+              icon: const Icon(Icons.colorize),
+              label: const Text('Colorize'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Display a loading spinner while processing
-            if (_isLoading) Center(child: CircularProgressIndicator()),
+            if (_isLoading) const Center(child: CircularProgressIndicator()),
             // Display the colorized image
             if (_colorizedImageUrl != null)
               Column(
                 children: [
-                  Text(
+                  const Text(
                     'Colorized Image:',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   _imageContainer(
                     child: Image.memory(
                       base64Decode(_colorizedImageUrl!.split(',')[1]),
                       fit: BoxFit.cover,
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white, backgroundColor: Colors.blue,
                     ),
                     onPressed: _downloadImage,
-                    icon: Icon(Icons.download),
-                    label: Text('Download Image'),
+                    icon: const Icon(Icons.download),
+                    label: const Text('Download Image'),
                   ),
                 ],
               ),
@@ -210,7 +212,7 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
         ),
       ),
       bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         onItemSelected: _onItemSelected,
       ),
     );

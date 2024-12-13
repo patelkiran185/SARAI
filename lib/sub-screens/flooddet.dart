@@ -197,7 +197,7 @@ class _FloodAreaDetectionScreenState extends State<FloodAreaDetectionScreen> {
 
  @override
 Widget build(BuildContext context) {
-  int _currentIndex = 0;
+  int currentIndex = 0;
   return Scaffold(
     appBar: AppBar(
        title: const Text(
@@ -284,7 +284,7 @@ Widget build(BuildContext context) {
       ],
     ),
        bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         onItemSelected: _onItemSelected,
       ),
   );

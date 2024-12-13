@@ -315,6 +315,46 @@ def colorize():
     except Exception as e:
         return {"error": str(e)}, 500
 
+vit_model_path = os.path.join(os.path.dirname(__file__), 'vit.onnx')
+ort_session_vit = onnxruntime.InferenceSession(vit_model_path)
+
+
+def preprocess_image_vit(image_bytes):
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    image = image.resize((224, 224))
+    image = np.array(image).astype(np.float32) / 255.0
+    image = (image - [0.485, 0.456, 0.406]) / [0.229, 0.224, 0.225]
+    image = np.transpose(image, (2, 0, 1))
+    return image.astype(np.float32)
+
+
+@app.route('/classifyVit', methods=['POST'])
+def classify_vit_image():
+    if request.method == 'POST':
+        if 'image' not in request.files:
+            return jsonify({"error": "No image provided"}), 400
+
+        image_file = request.files['image']
+        image_bytes = image_file.read()
+        input_tensor = preprocess_image_vit(image_bytes)
+        input_tensor = np.expand_dims(input_tensor, axis=0)
+
+        ort_inputs = {ort_session_vit.get_inputs()[0].name: input_tensor}
+        ort_outs = ort_session_vit.run(None, ort_inputs)
+
+        predictions = ort_outs[0]
+        predicted_class_index = np.argmax(predictions, axis=1)
+        predicted_class_name = class_names[int(predicted_class_index[0])]
+
+        return jsonify({
+            "predicted_class_index": int(predicted_class_index[0]),
+            "predicted_class_name": predicted_class_name
+        })
+    else:
+        return "This endpoint is for POST requests to classify images using ViT."
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

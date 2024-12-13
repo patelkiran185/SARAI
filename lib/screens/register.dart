@@ -376,7 +376,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => LoginScreen(),
+                            builder: (context) => const LoginScreen(),
                           ),
                         );
                       },

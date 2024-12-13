@@ -50,5 +50,4 @@ app.*.map.json
 /venv
 .env
 backend/sar2rgb222.onnx
-backend/pretrained_vit.pth
-backend/pretrained_vit_.pth
+backend/vit.onnx
