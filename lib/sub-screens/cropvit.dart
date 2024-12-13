@@ -4,8 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../utils/bottomNavigation.dart'; // Import BottomNavigation
-
+import '../utils/bottomNavigation.dart'; 
 class CropUsingVitPage extends StatefulWidget {
   const CropUsingVitPage({super.key});
 
@@ -27,7 +26,7 @@ class _CropUsingVitPageState extends State<CropUsingVitPage> {
       if (pickedImage != null) {
         setState(() {
           _image = File(pickedImage.path);
-          _errorMessage = null; // Clear any previous error message
+          _errorMessage = null; 
         });
       }
     } catch (e) {
@@ -55,7 +54,7 @@ class _CropUsingVitPageState extends State<CropUsingVitPage> {
         var resBody = json.decode(responseBody.body);
         setState(() {
           _prediction = resBody['predicted_class_name'];
-          _errorMessage = null; // Clear any previous error message
+          _errorMessage = null; 
         });
       } else {
         setState(() {

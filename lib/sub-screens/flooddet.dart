@@ -90,91 +90,93 @@ class _FloodAreaDetectionScreenState extends State<FloodAreaDetectionScreen> {
     });
   }
 
-  // Widget _buildImageGrid() {
-  //   final List<Map<String, dynamic>> images = [
-  //     if (_selectedImageBytes != null)
-  //       {'title': 'Uploaded Image', 'bytes': _selectedImageBytes},
-  //     if (_groundTruthBytes != null)
-  //       {'title': 'Ground Truth Image', 'bytes': _groundTruthBytes},
-  //     if (_predictedMaskBytes != null)
-  //       {'title': 'Predicted Mask', 'bytes': _predictedMaskBytes},
-  //     if (_resultImageBytes != null)
-  //       {'title': 'Flood Detected Image', 'bytes': _resultImageBytes},
-  //   ];
-
-  //   return GridView.builder(
-  //     shrinkWrap: true,
-  //     physics: const NeverScrollableScrollPhysics(),
-  //     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-  //       crossAxisCount: 2,
-  //       crossAxisSpacing: 10,
-  //       mainAxisSpacing: 10,
-  //       childAspectRatio: 1,
-  //     ),
-  //     itemCount: images.length,
-  //     itemBuilder: (context, index) {
-  //       final image = images[index];
-  //       return Column(
-  //         children: [
-  //           Text(
-  //             image['title'],
-  //             style: const TextStyle(
-  //                 fontSize: 14, fontWeight: FontWeight.bold),
-  //             textAlign: TextAlign.center,
-  //           ),
-  //           const SizedBox(height: 8),
-  //           Expanded(
-  //             child: Image.memory(
-  //               image['bytes'],
-  //               fit: BoxFit.cover,
-  //             ),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
   Widget _buildImageGrid() {
-  final List<Map<String, dynamic>> images = [
-    if (_selectedImageBytes != null)
-      {'title': 'Uploaded Image', 'bytes': _selectedImageBytes},
-    if (_predictedMaskBytes != null)
-      {'title': 'Predicted Mask', 'bytes': _predictedMaskBytes},
-    if (_resultImageBytes != null)
-      {'title': 'Flood Detected Image', 'bytes': _resultImageBytes},
-  ];
+    final List<Map<String, dynamic>> images = [
+      if (_selectedImageBytes != null)
+        {'title': 'Uploaded Image', 'bytes': _selectedImageBytes},
+      if (_groundTruthBytes != null)
+        {'title': 'Ground Truth Image', 'bytes': _groundTruthBytes},
+      if (_predictedMaskBytes != null)
+        {'title': 'Predicted Mask', 'bytes': _predictedMaskBytes},
+      if (_resultImageBytes != null)
+        {'title': 'Flood Detected Image', 'bytes': _resultImageBytes},
+    ];
 
-  return GridView.builder(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 2,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      childAspectRatio: 1,
-    ),
-    itemCount: images.length,
-    itemBuilder: (context, index) {
-      final image = images[index];
-      return Column(
-        children: [
-          Text(
-            image['title'],
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: Image.memory(
-              image['bytes'],
-              fit: BoxFit.cover,
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1,
+      ),
+      itemCount: images.length,
+      itemBuilder: (context, index) {
+        final image = images[index];
+        return Column(
+          children: [
+            Text(
+              image['title'],
+              style: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-          ),
-        ],
-      );
-    },
-  );
-}
+            const SizedBox(height: 8),
+            Expanded(
+              child: Image.memory(
+                image['bytes'],
+                fit: BoxFit.cover,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+//   Widget _buildImageGrid() {
+//   final List<Map<String, dynamic>> images = [
+//     if (_selectedImageBytes != null)
+//       {'title': 'Uploaded Image', 'bytes': _selectedImageBytes},
+//     if (_predictedMaskBytes != null)
+//       {'title': 'Predicted Mask', 'bytes': _predictedMaskBytes},
+//     if (_resultImageBytes != null)
+//       {'title': 'Flood Detected Image', 'bytes': _resultImageBytes},
+//   ];
+
+//   return GridView.builder(
+//     shrinkWrap: true,
+//     physics: const NeverScrollableScrollPhysics(),
+//     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+//       crossAxisCount: 2,
+//       crossAxisSpacing: 10,
+//       mainAxisSpacing: 10,
+//       childAspectRatio: 1,
+//     ),
+//     itemCount: images.length,
+//     itemBuilder: (context, index) {
+//       final image = images[index];
+//       return Column(
+//         children: [
+//           Text(
+//             image['title'],
+//             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+//             textAlign: TextAlign.center,
+//           ),
+//           const SizedBox(height: 8),
+//           Expanded(
+//             child: Image.memory(
+//               image['bytes'],
+//               fit: BoxFit.cover,
+//             ),
+//           ),
+//         ],
+//       );
+//     },
+//   );
+// }
+
  void _onItemSelected(int index) {
     setState(() {
       _currentIndex = index;

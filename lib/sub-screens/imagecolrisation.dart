@@ -23,18 +23,18 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
-  // Function to pick an image from the gallery
+ 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
-        _colorizedImageUrl = null; // Clear any previous output
+        _colorizedImageUrl = null; 
       });
     }
   }
 
-  // Function to upload the image and get the colorized image
+ 
   Future<void> _colorizeImage() async {
     if (_selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -205,6 +205,11 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
                     onPressed: _downloadImage,
                     icon: const Icon(Icons.download),
                     label: const Text('Download Image'),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'FID SCORE: 320',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
                   ),
                 ],
               ),

@@ -1,3 +1,4 @@
+from cmath import sqrt
 import sys
 from flask import Flask, Response, request, jsonify, send_file
 from PIL import Image
@@ -178,7 +179,7 @@ def detect_flood():
         image = original_image.resize((cf["image_size"], cf["image_size"]))
         
         
-        ground_truth_path = 'gim.jpeg' 
+        ground_truth_path = 'gim.png' 
         if os.path.exists(ground_truth_path):
             ground_truth_original = Image.open(ground_truth_path).convert('RGB')
             
@@ -314,6 +315,9 @@ def colorize():
         )
     except Exception as e:
         return {"error": str(e)}, 500
+
+
+
 
 vit_model_path = os.path.join(os.path.dirname(__file__), 'vit.onnx')
 ort_session_vit = onnxruntime.InferenceSession(vit_model_path)
