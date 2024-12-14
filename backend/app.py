@@ -2,9 +2,9 @@ from cmath import sqrt
 import sys
 from flask import Flask, Response, request, jsonify, send_file
 from PIL import Image
-import torch
-import torch.nn as nn
-from torchvision import transforms, models
+# import torch
+# import torch.nn as nn
+# from torchvision import transforms, models
 import io
 from flask_cors import CORS
 import base64
@@ -13,8 +13,8 @@ import numpy as np
 import cv2
 from flask import Flask, request, jsonify
 import onnxruntime
-import tensorflow as tf
-from tensorflow.keras.models import load_model
+# import tensorflow as tf
+# from tensorflow.keras.models import load_model
 from patchify import patchify
 import onnxruntime as ort
 import timm
@@ -89,53 +89,53 @@ def classify_image():
     else:
         return "This endpoint is for POST requests to classify images."    
     
-def tversky_loss(y_true, y_pred, alpha=0.7, beta=0.3):
-    smooth = 1e-6
-    y_true_flat = tf.keras.backend.flatten(y_true)
-    y_pred_flat = tf.keras.backend.flatten(y_pred)
-    true_pos = tf.reduce_sum(y_true_flat * y_pred_flat)
-    false_neg = tf.reduce_sum(y_true_flat * (1 - y_pred_flat))
-    false_pos = tf.reduce_sum((1 - y_true_flat) * y_pred_flat)
-    tversky = (true_pos + smooth) / (true_pos + alpha * false_neg + beta * false_pos + smooth)
-    return 1 - tversky
+# def tversky_loss(y_true, y_pred, alpha=0.7, beta=0.3):
+#     smooth = 1e-6
+#     y_true_flat = tf.keras.backend.flatten(y_true)
+#     y_pred_flat = tf.keras.backend.flatten(y_pred)
+#     true_pos = tf.reduce_sum(y_true_flat * y_pred_flat)
+#     false_neg = tf.reduce_sum(y_true_flat * (1 - y_pred_flat))
+#     false_pos = tf.reduce_sum((1 - y_true_flat) * y_pred_flat)
+#     tversky = (true_pos + smooth) / (true_pos + alpha * false_neg + beta * false_pos + smooth)
+#     return 1 - tversky
 
-def dice_coef(y_true, y_pred):
-    smooth = 1e-15
-    y_true = tf.keras.layers.Flatten()(y_true)
-    y_pred = tf.keras.layers.Flatten()(y_pred)
-    intersection = tf.reduce_sum(y_true * y_pred)
-    return (2. * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
+# def dice_coef(y_true, y_pred):
+#     smooth = 1e-15
+#     y_true = tf.keras.layers.Flatten()(y_true)
+#     y_pred = tf.keras.layers.Flatten()(y_pred)
+#     intersection = tf.reduce_sum(y_true * y_pred)
+#     return (2. * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
 
-def iou(y_true, y_pred):
-    smooth = 1e-15
-    intersection = tf.reduce_sum(y_true * y_pred)
-    sum_ = tf.reduce_sum(y_true + y_pred)
-    jac = (intersection + smooth) / (sum_ - intersection + smooth)
-    return jac
+# def iou(y_true, y_pred):
+#     smooth = 1e-15
+#     intersection = tf.reduce_sum(y_true * y_pred)
+#     sum_ = tf.reduce_sum(y_true + y_pred)
+#     jac = (intersection + smooth) / (sum_ - intersection + smooth)
+#     return jac
 
-def sensitivity(y_true, y_pred):
-    true_positives = tf.reduce_sum(tf.round(y_true * y_pred))
-    possible_positives = tf.reduce_sum(tf.round(y_true))
-    return true_positives / (possible_positives + tf.keras.backend.epsilon())
+# def sensitivity(y_true, y_pred):
+#     true_positives = tf.reduce_sum(tf.round(y_true * y_pred))
+#     possible_positives = tf.reduce_sum(tf.round(y_true))
+#     return true_positives / (possible_positives + tf.keras.backend.epsilon())
 
-def precision(y_true, y_pred):
-    true_positives = tf.reduce_sum(tf.round(y_true * y_pred))
-    predicted_positives = tf.reduce_sum(tf.round(y_pred))
-    return true_positives / (predicted_positives + tf.keras.backend.epsilon())
+# def precision(y_true, y_pred):
+#     true_positives = tf.reduce_sum(tf.round(y_true * y_pred))
+#     predicted_positives = tf.reduce_sum(tf.round(y_pred))
+#     return true_positives / (predicted_positives + tf.keras.backend.epsilon())
 
-def specificity(y_true, y_pred):
-    true_negatives = tf.reduce_sum(tf.round((1 - y_true) * (1 - y_pred)))
-    possible_negatives = tf.reduce_sum(tf.round(1 - y_true))
-    return true_negatives / (possible_negatives + tf.keras.backend.epsilon())
+# def specificity(y_true, y_pred):
+#     true_negatives = tf.reduce_sum(tf.round((1 - y_true) * (1 - y_pred)))
+#     possible_negatives = tf.reduce_sum(tf.round(1 - y_true))
+#     return true_negatives / (possible_negatives + tf.keras.backend.epsilon())
 
-flood_model = load_model("modell.keras", custom_objects={
-    'tversky_loss': tversky_loss,
-    'dice_coef': dice_coef,
-    'iou': iou,
-    'sensitivity': sensitivity,
-    'precision': precision,
-    'specificity': specificity
-})
+# flood_model = load_model("modell.keras", custom_objects={
+#     'tversky_loss': tversky_loss,
+#     'dice_coef': dice_coef,
+#     'iou': iou,
+#     'sensitivity': sensitivity,
+#     'precision': precision,
+#     'specificity': specificity
+# })
 
 cf = {
     "image_size": 256,
@@ -149,7 +149,7 @@ cf = {
 
 def preprocess_image_for_flood_detection(image):
     
-    image = np.array(image)
+    image = np.array(image).astype(np.float32)
  
     image = cv2.resize(image, (cf["image_size"], cf["image_size"]))
    
@@ -161,6 +161,9 @@ def preprocess_image_for_flood_detection(image):
     patches = np.expand_dims(patches, axis=0) 
     
     return patches
+# Load the SAR Colorization ONNX Model
+flood_model_path = "unetr.onnx"
+flood_session = ort.InferenceSession(flood_model_path)
 
 @app.route('/detect', methods=['POST'])
 def detect_flood():
@@ -192,10 +195,13 @@ def detect_flood():
         
         processed_image = preprocess_image_for_flood_detection(image)
         print("Image preprocessed for flood detection")
-     
-        prediction = flood_model.predict(processed_image)
+        
+
+        ort_inputs = {flood_session.get_inputs()[0].name: processed_image}
+        ort_outs = flood_session.run(None, ort_inputs)
+        # prediction = flood_model.predict(processed_image)
         print("Prediction made by the model")
-        prediction = np.squeeze(prediction)  
+        prediction = np.squeeze(ort_outs[0])  
         prediction = (prediction > 0.5).astype(np.uint8) 
 
         predicted_mask_image = (prediction * 255).astype(np.uint8)

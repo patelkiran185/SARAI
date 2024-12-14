@@ -51,3 +51,4 @@ app.*.map.json
 .env
 backend/sar2rgb222.onnx
 backend/vit.onnx
+backend/unetr.onnx
