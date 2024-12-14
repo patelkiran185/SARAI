@@ -187,16 +187,27 @@ class _SARColorizationScreenState extends State<SARColorizationScreen> {
               Column(
                 children: [
                   const Text(
-                    'Colorized Image:',
+                    'Colorized Image           Ground truth image',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  _imageContainer(
-                    child: Image.memory(
-                      base64Decode(_colorizedImageUrl!.split(',')[1]),
-                      fit: BoxFit.cover,
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _imageContainer(
+                          child: Image.memory(
+                            base64Decode(_colorizedImageUrl!.split(',')[1]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        _imageContainer(
+                          child: Image.asset(
+                            'assets/images/col3.jpeg',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
