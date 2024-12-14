@@ -17,7 +17,6 @@ import onnxruntime
 # from tensorflow.keras.models import load_model
 from patchify import patchify
 import onnxruntime as ort
-import timm
 
 onnx_model_path = os.path.join(os.path.dirname(__file__), 'vgg16.onnx')
 ort_session = onnxruntime.InferenceSession(onnx_model_path)
