@@ -55,13 +55,13 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => SplashScreen(
             hasSeenOnboarding: hasSeenOnboarding, isLoggedIn: isLoggedIn),
-        '/onboarding': (context) => OnboardingScreen(),
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(),
+        '/onboarding': (context) => const OnboardingScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
         '/home': (context) => const HomeScreen(),
-        '/settings': (context) => SettingsScreen(),
-        '/alerts': (context) => AlertsScreen(),
-        '/search':(context) => SearchScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/alerts': (context) => const AlertsScreen(),
+        '/search':(context) => const SearchScreen(),
       },
     );
   }
