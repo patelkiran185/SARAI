@@ -13,6 +13,10 @@ Goal is to create a mobile app that leverages Generative AI (GenAI) techniques t
 ## 🌟 Overview
 Synthetic aperture radar (SAR) imagery is crucial in remote sensing applications. However, due to inherent speckle noise and the grayscale nature of these images, interpreting them can be difficult. Our colorization techniques significantly improve the visual quality of SAR images, facilitating better analysis and yielding valuable information for diverse applications.
 
+## View it
+
+https://github.com/user-attachments/assets/1dc67b7b-b7e6-473e-8b1a-e3e0d9f16fcc
+
 ### Key Functionalities  
 
 1. **Crop Classification**  
@@ -40,8 +44,10 @@ Synthetic aperture radar (SAR) imagery is crucial in remote sensing applications
 - **Frontend:**   
   - **Flutter:** To build a sleek, responsive user interface for an exceptional user experience.  
 
-- **Backend:**   
+- **Backend:**  
   - **Flask:** For developing APIs and backend integration.  
+  - **Deployed at:** [Click here](https://remote-sensing-flask-review-975081052003.asia-south1.run.app/)
+
 
 - **Containerization:**   
   - **Docker:** Ensures smooth deployment and scalability of the application.  
